@@ -84,6 +84,19 @@
         border-bottom: 1px solid var(--panel-border);
       }
 
+      #sidebarGrabber {
+        display: none;
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 62px;
+        height: 5px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--subtext) 55%, transparent);
+        touch-action: none;
+      }
+
       #brandRow {
         display: flex;
         align-items: center;
@@ -94,19 +107,20 @@
       #brandLeft {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 2px;
         min-width: 0;
       }
 
       #brandTitle {
         min-width: 0;
+        margin-left: -2px;
       }
 
       #brandRow h1 {
         margin: 0;
-        font-size: 18px;
-        font-weight: 750;
-        letter-spacing: -0.2px;
+        font-size: 19px;
+        font-weight: 680;
+        letter-spacing: -0.15px;
         line-height: 1.1;
         white-space: nowrap;
         overflow: hidden;
@@ -129,8 +143,8 @@
       .icon svg { width: 100%; height: 100%; display: block; }
 
       #brandLogo {
-        width: 20px;
-        height: 20px;
+        width: 22px;
+        height: 22px;
         flex: 0 0 auto;
         display: block;
         object-fit: contain;
@@ -163,6 +177,12 @@
         justify-content: center;
       }
 
+      #optionsBtn.is-menu-open {
+        opacity: 0;
+        transform: scale(0.84);
+        pointer-events: none;
+      }
+
       #collapseBtn,
       #detailCloseBtn {
         width: 38px;
@@ -176,15 +196,16 @@
         top: 56px;
         right: 14px;
         z-index: 40;
-        width: min(320px, calc(100% - 28px));
-        padding: 8px;
-        border-radius: 24px;
-        border: 1px solid var(--panel-border);
-        background: var(--panel-bg);
+        width: min(212px, calc(100% - 28px));
+        padding: 8px 8px 10px 8px;
+        border-radius: 22px;
+        border: 1px solid color-mix(in srgb, var(--panel-border) 60%, rgba(255,255,255,0.24));
+        background: color-mix(in srgb, var(--panel-bg) 82%, rgba(10,10,14,0.56));
         color: var(--text);
-        box-shadow: var(--shadow);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 16px 34px rgba(0,0,0,0.32);
+        backdrop-filter: blur(20px) saturate(120%);
+        -webkit-backdrop-filter: blur(20px) saturate(120%);
+        transform-origin: top right;
       }
 
       #optionsMenu[hidden] {
@@ -196,8 +217,8 @@
         border: 0;
         background: transparent;
         color: inherit;
-        border-radius: 16px;
-        padding: 12px 10px;
+        border-radius: 14px;
+        padding: 10px 10px;
         display: flex;
         align-items: center;
         gap: 12px;
@@ -209,15 +230,11 @@
         background: var(--row-hover);
       }
 
-      .optionsRow + .optionsRow {
-        margin-top: 4px;
-      }
-
       .optionsIcon {
-        width: 28px;
-        height: 28px;
+        width: 24px;
+        height: 24px;
         flex: 0 0 auto;
-        opacity: 0.96;
+        opacity: 0.9;
       }
 
       .optionsIcon svg {
@@ -233,31 +250,72 @@
 
       .optionsTitle {
         margin: 0;
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 650;
         line-height: 1.1;
       }
 
       .optionsValue {
         margin: 3px 0 0 0;
-        font-size: 13px;
+        font-size: 12px;
         color: var(--subtext);
         opacity: 1;
         line-height: 1.1;
       }
 
       .optionsChevron {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
         flex: 0 0 auto;
-        opacity: 0.88;
+        opacity: 0.74;
+        transition: transform 160ms ease;
+      }
+
+      .optionsRow.is-open .optionsChevron {
+        transform: rotate(90deg);
+      }
+
+      #optionsMenu.options-menu-down {
+        animation: optionsMenuInDown 170ms ease;
+      }
+
+      #optionsMenu.options-menu-up {
+        animation: optionsMenuInUp 170ms ease;
+      }
+
+      @keyframes optionsMenuInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-6px) scale(0.94);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes optionsMenuInUp {
+        from {
+          opacity: 0;
+          transform: translateY(calc(-100% + 6px)) scale(0.94);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(-100%) scale(1);
+        }
       }
 
       .optionsChoices {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 4px 10px 10px 50px;
+        display: block;
+        padding: 2px 0 8px 0;
+      }
+
+      .optionsChoices::before {
+        content: "";
+        display: block;
+        height: 1px;
+        margin: 2px 12px 6px 12px;
+        background: var(--panel-border);
       }
 
       .optionsChoices[hidden] {
@@ -265,18 +323,42 @@
       }
 
       .optionChoice {
-        border: 1px solid var(--panel-border);
-        background: var(--control-bg);
+        width: 100%;
+        border: 0;
+        background: transparent;
         color: var(--text);
-        border-radius: 999px;
-        font-size: 12px;
-        padding: 5px 10px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 1.2;
+        text-align: left;
+        padding: 10px 12px 10px 36px;
+        position: relative;
         cursor: pointer;
       }
 
-      .optionChoice.is-active {
+      .optionChoice::before {
+        content: "";
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px;
+        text-align: center;
+        font-size: 17px;
+        line-height: 1;
+      }
+
+      .optionChoice:hover {
         background: var(--row-hover);
-        border-color: var(--panel-border);
+      }
+
+      .optionChoice.is-active {
+        background: color-mix(in srgb, var(--row-hover) 82%, transparent);
+      }
+
+      .optionChoice.is-active::before {
+        content: "\2713";
       }
 
       #searchWrap {
@@ -401,17 +483,15 @@
       }
 
       .sectionGroup {
-        border: 1px solid var(--list-card-border);
+        border: 1px solid var(--panel-border);
         border-radius: 14px;
-        background: var(--list-card-bg);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        background: var(--detail-card-bg);
         overflow: hidden;
         margin-bottom: 10px;
       }
 
       .row {
-        padding: 11px 12px;
+        padding: 10px 12px;
         border: 0;
         border-radius: 0;
         background: transparent;
@@ -437,9 +517,9 @@
       }
 
       .rowLogo {
-        width: 24px;
-        height: 24px;
-        border-radius: 6px;
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
         flex: 0 0 auto;
         object-fit: cover;
       }
@@ -477,15 +557,23 @@
         display: flex;
         justify-content: flex-end;
         padding: 10px 12px 0 12px;
+        flex: 0 0 auto;
       }
 
       #detailBody {
+        flex: 1 1 auto;
+        min-height: 0;
         padding: 8px 14px 14px 14px;
-        overflow: auto;
+        overflow-y: auto;
+        overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         display: flex;
         flex-direction: column;
         gap: 14px;
+      }
+
+      #detailBody > * {
+        flex: 0 0 auto;
       }
 
       #detailHero {
@@ -776,7 +864,7 @@
 
       .rowTitle {
         font-size: 14px;
-        font-weight: 650;
+        font-weight: 400;
         margin: 0;
         line-height: 1.2;
         white-space: nowrap;
@@ -816,26 +904,124 @@
 
       /* Mobile: sidebar becomes top sheet */
       @media (max-width: 640px) {
-        #sidebar {
-          left: 12px;
-          right: 12px;
-          width: auto;
-          max-height: 48%;
+        #expandPill,
+        #collapseBtn {
+          display: none !important;
         }
+
+        #sidebar {
+          left: 0;
+          right: 0;
+          bottom: 0;
+          top: auto;
+          width: auto;
+          max-height: min(88vh, calc(100% - 8px));
+          border-radius: 22px 22px 0 0;
+          border-left: 1px solid var(--panel-border);
+          transform: translateY(var(--mobile-list-offset, 0px));
+          transition: transform 220ms ease;
+        }
+
+        #sidebar.is-collapsed {
+          transform: translateY(var(--mobile-list-offset, 0px));
+        }
+
+        #sidebarHeader {
+          padding-top: 24px;
+        }
+
+        #brandLeft {
+          gap: 2px;
+        }
+
+        #brandLogo {
+          width: 21px;
+          height: 21px;
+        }
+
+        #brandRow h1 {
+          font-size: 21px;
+          font-weight: 640;
+          letter-spacing: -0.1px;
+          line-height: 1.02;
+        }
+
+        #brandTitle {
+          margin-left: -2px;
+        }
+
+        #optionsMenu {
+          width: min(212px, calc(100% - 20px));
+          padding: 6px;
+          border-radius: 18px;
+          transform: translateY(0);
+          transform-origin: top right;
+        }
+
+        #optionsMenu.options-menu-up {
+          transform: translateY(-100%);
+          transform-origin: bottom right;
+        }
+
+        .optionsRow {
+          padding: 10px 8px;
+          gap: 10px;
+          border-radius: 12px;
+        }
+
+        .optionsIcon {
+          width: 24px;
+          height: 24px;
+        }
+
+        .optionsTitle {
+          font-size: 14px;
+        }
+
+        .optionsValue {
+          margin-top: 2px;
+          font-size: 12px;
+        }
+
+        .optionsChoices {
+          padding: 2px 0 8px 0;
+        }
+
+        .optionChoice {
+          font-size: 15px;
+          padding: 10px 10px 10px 34px;
+        }
+
+        #sidebarGrabber {
+          display: block;
+        }
+
+        #list {
+          padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        }
+
         #detailSidebar {
-          left: 12px;
-          right: 12px;
+          left: 0;
+          right: 0;
           width: auto;
           top: auto;
-          bottom: 12px;
-          max-height: 42%;
+          bottom: 0;
+          height: min(92vh, calc(100% - 8px));
+          max-height: min(92vh, calc(100% - 8px));
           border-left: 1px solid var(--panel-border);
-          border-radius: 18px;
+          border-radius: 22px 22px 0 0;
+          z-index: 30;
+          padding-bottom: env(safe-area-inset-bottom, 0px);
         }
-        #sidebar.is-collapsed {
-          transform: translateY(calc(-100% - 10px));
+
+        #sidebar.options-open {
+          overflow: visible;
         }
-        #expandPill { left: 12px; }
+
+        body.mobile-mode.mobile-detail-open #sidebar {
+          transform: translateY(calc(100% + 20px)) !important;
+          pointer-events: none;
+        }
       }
     </style>
 
@@ -872,6 +1058,7 @@
 
     <div id="sidebar">
       <div id="sidebarHeader">
+        <div id="sidebarGrabber" aria-hidden="true"></div>
         <div id="brandRow">
           <div id="brandLeft">
             <img id="brandLogo" src="/renfo-logo.png" alt="" aria-hidden="true" />
@@ -907,7 +1094,7 @@
         </div>
 
         <div id="optionsMenu" hidden>
-          <button id="groupMenuRow" class="optionsRow" type="button" aria-label="Group by setting">
+          <button id="groupMenuRow" class="optionsRow" type="button" aria-label="Group by setting" aria-expanded="false">
             <span class="optionsIcon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none">
                 <rect x="3.5" y="5.5" width="17" height="13" rx="2.4" stroke="currentColor" stroke-width="1.8" />
@@ -931,7 +1118,7 @@
             <button type="button" class="optionChoice" data-select="group" data-value="status">Status</button>
           </div>
 
-          <button id="sortMenuRow" class="optionsRow" type="button" aria-label="Sort by setting">
+          <button id="sortMenuRow" class="optionsRow" type="button" aria-label="Sort by setting" aria-expanded="false">
             <span class="optionsIcon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none">
                 <path d="M8 5v14M8 5l-3 3M8 5l3 3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
@@ -1177,6 +1364,8 @@
       const $group = document.getElementById("groupSelect");
       const $sort = document.getElementById("sortSelect");
       const $sidebar = document.getElementById("sidebar");
+      const $sidebarHeader = document.getElementById("sidebarHeader");
+      const $sidebarGrabber = document.getElementById("sidebarGrabber");
       const $collapseBtn = document.getElementById("collapseBtn");
       const $expandPill = document.getElementById("expandPill");
       const $optionsBtn = document.getElementById("optionsBtn");
@@ -1213,6 +1402,10 @@
       let selectedFestivalId = null;
       let detailRenderVersion = 0;
       const resourceAssetExistsCache = new Map();
+      const mobileMedia = window.matchMedia("(max-width: 640px)");
+      let mobileSheetState = "peek";
+      let mobileSheetOffset = 0;
+      let mobileSheetDrag = null;
 
       function getSelectLabel(selectEl) {
         return selectEl.options[selectEl.selectedIndex]?.textContent ?? "";
@@ -1230,10 +1423,47 @@
         }
       }
 
+      function syncOptionsMenuDirection() {
+        if (!isMobileViewport()) {
+          $optionsMenu.classList.remove("options-menu-up");
+          $optionsMenu.classList.add("options-menu-down");
+          return;
+        }
+
+        const sheetTop = $sidebar.getBoundingClientRect().top;
+        const openDown = sheetTop <= (window.innerHeight * 0.5);
+        $optionsMenu.classList.toggle("options-menu-down", openDown);
+        $optionsMenu.classList.toggle("options-menu-up", !openDown);
+      }
+
+      function positionOptionsMenu() {
+        const headerRect = $sidebarHeader.getBoundingClientRect();
+        const btnRect = $optionsBtn.getBoundingClientRect();
+        const right = Math.max(8, Math.round(headerRect.right - btnRect.right));
+        const openUp = isMobileViewport() && $optionsMenu.classList.contains("options-menu-up");
+        const top = openUp
+          ? Math.round(btnRect.bottom - headerRect.top)
+          : Math.round(btnRect.top - headerRect.top);
+
+        $optionsMenu.style.right = `${right}px`;
+        $optionsMenu.style.top = `${top}px`;
+      }
+
+      function setChoicesOpen(type, open) {
+        const isGroup = type === "group";
+        const row = isGroup ? $groupMenuRow : $sortMenuRow;
+        const choices = isGroup ? $groupChoices : $sortChoices;
+        choices.hidden = !open;
+        row.classList.toggle("is-open", open);
+        row.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+
       function closeOptionsMenu() {
         $optionsMenu.hidden = true;
-        $groupChoices.hidden = true;
-        $sortChoices.hidden = true;
+        $optionsBtn.classList.remove("is-menu-open");
+        $sidebar.classList.remove("options-open");
+        setChoicesOpen("group", false);
+        setChoicesOpen("sort", false);
       }
 
       function toggleOptionsMenu() {
@@ -1244,18 +1474,24 @@
         }
 
         syncOptionsMenuState();
+        syncOptionsMenuDirection();
+        positionOptionsMenu();
         $optionsMenu.hidden = false;
+        $optionsBtn.classList.add("is-menu-open");
+        $sidebar.classList.add("options-open");
       }
 
       function toggleChoices(type) {
         if (type === "group") {
-          $groupChoices.hidden = !$groupChoices.hidden;
-          $sortChoices.hidden = true;
+          const opening = $groupChoices.hidden;
+          setChoicesOpen("group", opening);
+          setChoicesOpen("sort", false);
           return;
         }
 
-        $sortChoices.hidden = !$sortChoices.hidden;
-        $groupChoices.hidden = true;
+        const opening = $sortChoices.hidden;
+        setChoicesOpen("sort", opening);
+        setChoicesOpen("group", false);
       }
 
       function setSelectValue(selectEl, value) {
@@ -1264,11 +1500,93 @@
         selectEl.dispatchEvent(new Event("change"));
       }
 
+      function isMobileViewport() {
+        return mobileMedia.matches;
+      }
+
+      function getMobileSheetMetrics() {
+        const sidebarHeight = $sidebar.getBoundingClientRect().height;
+        const headerHeight = $sidebarHeader.getBoundingClientRect().height;
+        const peekVisible = Math.max(96, headerHeight - 6);
+        const maxOffset = Math.max(0, sidebarHeight - peekVisible);
+        return {
+          full: 0,
+          mid: Math.round(maxOffset * 0.44),
+          peek: maxOffset
+        };
+      }
+
+      function applyMobileSheetOffset(nextOffset, options = {}) {
+        if (!isMobileViewport()) return;
+        const { animate = true } = options;
+        const { peek } = getMobileSheetMetrics();
+        const clamped = Math.min(Math.max(nextOffset, 0), peek);
+        mobileSheetOffset = clamped;
+        if (!animate) $sidebar.style.transition = "none";
+        $sidebar.style.setProperty("--mobile-list-offset", `${clamped}px`);
+        if (!animate) {
+          requestAnimationFrame(() => {
+            $sidebar.style.removeProperty("transition");
+          });
+        }
+      }
+
+      function setMobileSheetState(nextState, options = {}) {
+        if (!isMobileViewport()) return;
+        const { animate = true } = options;
+        const { full, mid, peek } = getMobileSheetMetrics();
+        const target = nextState === "full" ? full : nextState === "mid" ? mid : peek;
+        mobileSheetState = nextState;
+        applyMobileSheetOffset(target, { animate });
+      }
+
+      function snapMobileSheetToNearest() {
+        if (!isMobileViewport()) return;
+        const metrics = getMobileSheetMetrics();
+        const states = ["full", "mid", "peek"];
+        let nearest = "peek";
+        let nearestDist = Number.POSITIVE_INFINITY;
+        for (const state of states) {
+          const dist = Math.abs(mobileSheetOffset - metrics[state]);
+          if (dist < nearestDist) {
+            nearestDist = dist;
+            nearest = state;
+          }
+        }
+        setMobileSheetState(nearest, { animate: true });
+      }
+
+      function syncMobileModeClasses() {
+        const mobile = isMobileViewport();
+        document.body.classList.toggle("mobile-mode", mobile);
+        if (!mobile) {
+          document.body.classList.remove("mobile-detail-open");
+          $sidebar.style.removeProperty("--mobile-list-offset");
+          syncOptionsMenuDirection();
+          positionOptionsMenu();
+          return;
+        }
+        setMobileSheetState(mobileSheetState, { animate: false });
+        if (!$optionsMenu.hidden) {
+          syncOptionsMenuDirection();
+          positionOptionsMenu();
+        }
+      }
+
+      function syncMobileDetailSheetState(isOpen) {
+        if (!isMobileViewport()) {
+          document.body.classList.remove("mobile-detail-open");
+          return;
+        }
+        document.body.classList.toggle("mobile-detail-open", !!isOpen);
+      }
+
       function updateSearchClearVisibility() {
         $searchClearBtn.hidden = !$search.value;
       }
 
       function setCollapsed(collapsed) {
+        if (isMobileViewport()) return;
         $sidebar.classList.toggle("is-collapsed", collapsed);
         $expandPill.classList.toggle("show", collapsed);
         document.body.classList.toggle("list-collapsed", collapsed);
@@ -1294,11 +1612,53 @@
         $search.dispatchEvent(new Event("input", { bubbles: true }));
         $search.focus();
       });
+      function handleMobileSheetPointerDown(event) {
+        if (!isMobileViewport()) return;
+        if (document.body.classList.contains("mobile-detail-open")) return;
+        if (event.target.closest("button, a, input, select, textarea, label")) return;
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+
+        mobileSheetDrag = {
+          pointerId: event.pointerId,
+          startY: event.clientY,
+          startOffset: mobileSheetOffset
+        };
+        $sidebarHeader.setPointerCapture?.(event.pointerId);
+        event.preventDefault();
+      }
+
+      function handleMobileSheetPointerMove(event) {
+        if (!mobileSheetDrag) return;
+        if (event.pointerId !== mobileSheetDrag.pointerId) return;
+        const delta = event.clientY - mobileSheetDrag.startY;
+        applyMobileSheetOffset(mobileSheetDrag.startOffset + delta, { animate: false });
+        event.preventDefault();
+      }
+
+      function handleMobileSheetPointerUp(event) {
+        if (!mobileSheetDrag) return;
+        if (event.pointerId !== mobileSheetDrag.pointerId) return;
+        mobileSheetDrag = null;
+        snapMobileSheetToNearest();
+      }
+
+      $sidebarGrabber.addEventListener("pointerdown", handleMobileSheetPointerDown);
+      $sidebarHeader.addEventListener("pointerdown", handleMobileSheetPointerDown);
+      window.addEventListener("pointermove", handleMobileSheetPointerMove, { passive: false });
+      window.addEventListener("pointerup", handleMobileSheetPointerUp);
+      window.addEventListener("pointercancel", handleMobileSheetPointerUp);
+      if (mobileMedia.addEventListener) {
+        mobileMedia.addEventListener("change", syncMobileModeClasses);
+      } else if (mobileMedia.addListener) {
+        mobileMedia.addListener(syncMobileModeClasses);
+      }
+      window.addEventListener("resize", () => syncMobileModeClasses());
 
       for (const button of $groupChoiceButtons) {
         button.addEventListener("click", () => {
           setSelectValue($group, button.dataset.value);
           syncOptionsMenuState();
+          setChoicesOpen("group", false);
         });
       }
 
@@ -1306,6 +1666,7 @@
         button.addEventListener("click", () => {
           setSelectValue($sort, button.dataset.value);
           syncOptionsMenuState();
+          setChoicesOpen("sort", false);
         });
       }
 
@@ -1590,6 +1951,7 @@
           $detailResources.innerHTML = "";
           $detailResourcesCard.hidden = true;
           $detailSidebar.hidden = true;
+          syncMobileDetailSheetState(false);
           return;
         }
 
@@ -1664,6 +2026,7 @@
         $detailResourcesCard.hidden = true;
         renderDetailResources(f, renderVersion);
         $detailSidebar.hidden = false;
+        syncMobileDetailSheetState(true);
       }
 
       // ---------- Map ----------
@@ -1781,9 +2144,6 @@
 
         function focusFestival(f) {
           selectFestival(f, { zoomToFestival: true });
-
-          // Optional: auto-collapse sidebar on mobile when selecting
-          if (window.matchMedia("(max-width: 640px)").matches) setCollapsed(true);
         }
 
         function getFilteredAndSorted() {
@@ -1813,6 +2173,7 @@
         syncOptionsMenuState();
         updateSearchClearVisibility();
         updateDetailPanel(null);
+        syncMobileModeClasses();
 
         // Controls
         $search.addEventListener("input", () => {
