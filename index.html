@@ -5,22 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Renfo Map</title>
 
-    <!-- Favicon (SVG data URL, no extra file needed) -->
-    <link
-      rel="icon"
-      href='data:image/svg+xml;utf8,
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-        <defs>
-          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stop-color="%23ff2d55"/>
-            <stop offset="1" stop-color="%23ffcc00"/>
-          </linearGradient>
-        </defs>
-        <rect x="6" y="6" width="52" height="52" rx="14" fill="%23ffffff"/>
-        <path d="M18 42h28l-3 10H21l-3-10Zm3-4 2-16 9 9 9-9 2 16H21Z"
-              fill="url(%23g)"/>
-      </svg>'
-    />
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <style>
       :root {
@@ -302,13 +289,21 @@
     </style>
 
     <!-- MapKit JS -->
+    <script src="/config.js"></script>
     <script
       src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js"
       crossorigin
       async
       data-callback="initMapKit"
       data-libraries="map,annotations"
-      data-token="eyJraWQiOiIyN1k1MzNBNzNXIiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJYS1E0MjRIUTMzIiwiaWF0IjoxNzcxNDUyNTEzLCJvcmlnaW4iOiJtYXAucmVuZm8uYXBwIn0.2kg_5vY5qgdnYpXps1fXzhNX8-fKQ4z2RIg0xK8800QQ8TxQ82oNC5-jbWSalwshNhmOSPxdBM7sHDoP9TC1mw">
+      data-token=""
+    ></script>
+    <script>
+      // Inject token at runtime
+      document.currentScript.previousElementSibling.setAttribute(
+        "data-token",
+        window.RENFO_CONFIG.MAPKIT_TOKEN
+      );
     </script>
   </head>
 
