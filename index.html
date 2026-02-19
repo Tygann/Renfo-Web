@@ -1,9 +1,634 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Renfo Maps</title>
-</head>
-<body>
-  <h1>Renfo is Live 🚀</h1>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Renfo Map</title>
+
+    <!-- Favicon (SVG data URL, no extra file needed) -->
+    <link
+      rel="icon"
+      href='data:image/svg+xml;utf8,
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+        <defs>
+          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="%23ff2d55"/>
+            <stop offset="1" stop-color="%23ffcc00"/>
+          </linearGradient>
+        </defs>
+        <rect x="6" y="6" width="52" height="52" rx="14" fill="%23ffffff"/>
+        <path d="M18 42h28l-3 10H21l-3-10Zm3-4 2-16 9 9 9-9 2 16H21Z"
+              fill="url(%23g)"/>
+      </svg>'
+    />
+
+    <style>
+      :root {
+        --panel-bg: rgba(255, 255, 255, 0.88);
+        --panel-border: rgba(0, 0, 0, 0.08);
+        --shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+        --text: rgba(0,0,0,0.92);
+        --subtext: rgba(0,0,0,0.60);
+        --row-sep: rgba(0,0,0,0.06);
+        --row-hover: rgba(0,0,0,0.04);
+        --control-bg: rgba(255,255,255,0.85);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --panel-bg: rgba(30, 30, 30, 0.78);
+          --panel-border: rgba(255, 255, 255, 0.10);
+          --shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+          --text: rgba(255,255,255,0.92);
+          --subtext: rgba(255,255,255,0.60);
+          --row-sep: rgba(255,255,255,0.08);
+          --row-hover: rgba(255,255,255,0.06);
+          --control-bg: rgba(40,40,40,0.85);
+        }
+      }
+
+      html, body { height: 100%; margin: 0; }
+      body { overflow: hidden; color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+
+      #map { height: 100%; width: 100%; }
+
+      /* Sidebar */
+      #sidebar {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        z-index: 20;
+        width: 360px;
+        max-height: calc(100% - 32px);
+        display: flex;
+        flex-direction: column;
+
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 18px;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+
+        transform: translateX(0);
+        transition: transform 220ms ease;
+      }
+
+      #sidebar.is-collapsed {
+        transform: translateX(calc(-100% - 10px));
+      }
+
+      #sidebarHeader {
+        padding: 14px 14px 10px 14px;
+        border-bottom: 1px solid var(--panel-border);
+      }
+
+      #brandRow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      #brandLeft {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      #brandTitle {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      #brandRow h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 750;
+        letter-spacing: -0.2px;
+        line-height: 1.1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      #brandRow span {
+        font-size: 12px;
+        opacity: 0.65;
+        color: var(--subtext);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .icon {
+        width: 20px;
+        height: 20px;
+        flex: 0 0 auto;
+        display: inline-block;
+      }
+
+      .icon svg { width: 100%; height: 100%; display: block; }
+
+      .iconCrown svg {
+        filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12));
+      }
+
+      .iconButton {
+        border: 1px solid var(--panel-border);
+        background: var(--control-bg);
+        color: var(--text);
+        border-radius: 12px;
+        padding: 8px 10px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .iconButton:hover { opacity: 0.92; }
+      .iconButton:active { transform: translateY(0.5px); }
+
+      #search {
+        margin-top: 10px;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 14px;
+        outline: none;
+        background: var(--control-bg);
+        color: var(--text);
+      }
+
+      #controlsRow {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .selectWrap {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .label {
+        font-size: 11px;
+        opacity: 0.75;
+        color: var(--subtext);
+      }
+
+      select {
+        width: 100%;
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        padding: 10px 10px;
+        background: var(--control-bg);
+        color: var(--text);
+        font-size: 13px;
+        outline: none;
+        appearance: none;
+      }
+
+      #metaRow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 10px;
+        font-size: 12px;
+        opacity: 0.8;
+        color: var(--subtext);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(0,0,0,0.10);
+        background: rgba(255,255,255,0.55);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .badge {
+          border: 1px solid rgba(255,255,255,0.12);
+          background: rgba(0,0,0,0.25);
+        }
+      }
+
+      #list {
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .sectionHeader {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        padding: 10px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.1px;
+        color: var(--subtext);
+        background: linear-gradient(to bottom, var(--panel-bg), rgba(0,0,0,0));
+        border-bottom: 1px solid var(--row-sep);
+        backdrop-filter: blur(10px);
+      }
+
+      .row {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--row-sep);
+        cursor: pointer;
+      }
+
+      .row:hover { background: var(--row-hover); }
+
+      .rowTitle {
+        font-size: 14px;
+        font-weight: 650;
+        margin: 0 0 2px 0;
+      }
+
+      .rowSub {
+        font-size: 12px;
+        opacity: 0.68;
+        margin: 0;
+        color: var(--subtext);
+      }
+
+      /* Expand button (shown when sidebar is collapsed) */
+      #expandPill {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        z-index: 21;
+        display: none;
+        border: 1px solid var(--panel-border);
+        background: var(--panel-bg);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 10px 12px;
+        box-shadow: var(--shadow);
+        cursor: pointer;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        align-items: center;
+        gap: 10px;
+      }
+
+      #expandPill.show { display: inline-flex; }
+
+      /* Mobile: sidebar becomes top sheet */
+      @media (max-width: 640px) {
+        #sidebar {
+          left: 12px;
+          right: 12px;
+          width: auto;
+          max-height: 48%;
+        }
+        #sidebar.is-collapsed {
+          transform: translateY(calc(-100% - 10px));
+        }
+        #expandPill { left: 12px; }
+      }
+    </style>
+
+    <!-- MapKit JS -->
+    <script
+      src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js"
+      crossorigin
+      async
+      data-callback="initMapKit"
+      data-libraries="map,annotations"
+      data-token="eyJraWQiOiIyN1k1MzNBNzNXIiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJYS1E0MjRIUTMzIiwiaWF0IjoxNzcxNDUyNTEzLCJvcmlnaW4iOiJtYXAucmVuZm8uYXBwIn0.2kg_5vY5qgdnYpXps1fXzhNX8-fKQ4z2RIg0xK8800QQ8TxQ82oNC5-jbWSalwshNhmOSPxdBM7sHDoP9TC1mw">
+    </script>
+  </head>
+
+  <body>
+    <button id="expandPill" aria-label="Expand sidebar">
+      <span class="icon" aria-hidden="true">
+        <!-- chevron right -->
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <strong>Renfo</strong>
+    </button>
+
+    <div id="sidebar">
+      <div id="sidebarHeader">
+        <div id="brandRow">
+          <div id="brandLeft">
+            <span class="icon iconCrown" aria-hidden="true">
+              <!-- Crown-ish SF-symbol style (inline SVG) -->
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M5 9.2l3.2 3.1L12 7.8l3.8 4.5L19 9.2l-1.4 9.1H6.4L5 9.2Z"
+                      fill="currentColor" opacity="0.92"/>
+                <path d="M6.4 18.3h11.2l-.7 2.2H7.1l-.7-2.2Z" fill="currentColor" opacity="0.68"/>
+              </svg>
+            </span>
+
+            <div id="brandTitle">
+              <h1>Renfo</h1>
+              <span>Renaissance Festivals</span>
+            </div>
+          </div>
+
+          <button id="collapseBtn" class="iconButton" aria-label="Collapse sidebar" title="Collapse">
+            <span class="icon" aria-hidden="true">
+              <!-- chevron left -->
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <input id="search" type="search" placeholder="Search festivals…" autocomplete="off" />
+
+        <div id="controlsRow">
+          <div class="selectWrap">
+            <div class="label">Group</div>
+            <select id="groupSelect">
+              <option value="none" selected>None</option>
+              <option value="state">State</option>
+              <option value="status">Status</option>
+            </select>
+          </div>
+
+          <div class="selectWrap">
+            <div class="label">Sort</div>
+            <select id="sortSelect">
+              <option value="name" selected>Name</option>
+              <option value="startDate">Start Date</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="metaRow">
+          <div class="badge"><span id="count">0</span> shown</div>
+          <div class="badge" id="hint">Click a festival to zoom</div>
+        </div>
+      </div>
+
+      <div id="list"></div>
+    </div>
+
+    <div id="map"></div>
+
+    <script type="module">
+      // ---------- Helpers ----------
+      async function waitForMapKit() {
+        if (!window.mapkit || !window.mapkit.loadedLibraries) {
+          await new Promise(resolve => (window.initMapKit = resolve));
+          delete window.initMapKit;
+        }
+      }
+
+      async function loadFestivals() {
+        const response = await fetch("./festivals.json", { cache: "no-store" });
+        const data = await response.json();
+
+        return (data ?? [])
+          .filter(f => f.latitude != null && f.longitude != null)
+          .map(f => ({
+            ...f,
+            lat: f.latitude,
+            lng: f.longitude,
+            subtitle: `${f.city ?? ""}${f.city && f.state ? ", " : ""}${f.state ?? ""}`.trim()
+          }));
+      }
+
+      function normalize(s) {
+        return (s ?? "").toString().toLowerCase();
+      }
+
+      function parseDate(value) {
+        if (!value) return null;
+        const d = new Date(value);
+        return Number.isFinite(d.getTime()) ? d : null;
+      }
+
+      function compareByName(a, b) {
+        return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" });
+      }
+
+      function compareByStartDate(a, b) {
+        const da = parseDate(a.dateBegin) ?? parseDate(a.startDate) ?? null;
+        const db = parseDate(b.dateBegin) ?? parseDate(b.startDate) ?? null;
+
+        // Nulls last
+        if (da && db) return da - db || compareByName(a, b);
+        if (da && !db) return -1;
+        if (!da && db) return 1;
+        return compareByName(a, b);
+      }
+
+      function getGroupKey(f, groupMode) {
+        if (groupMode === "state") return f.stateName || f.state || "Unknown";
+        if (groupMode === "status") return f.status || "Unknown";
+        return "All";
+      }
+
+      function sortFestivals(items, sortMode) {
+        const copy = [...items];
+        copy.sort(sortMode === "startDate" ? compareByStartDate : compareByName);
+        return copy;
+      }
+
+      // ---------- UI elements ----------
+      const $search = document.getElementById("search");
+      const $list = document.getElementById("list");
+      const $count = document.getElementById("count");
+      const $group = document.getElementById("groupSelect");
+      const $sort = document.getElementById("sortSelect");
+      const $sidebar = document.getElementById("sidebar");
+      const $collapseBtn = document.getElementById("collapseBtn");
+      const $expandPill = document.getElementById("expandPill");
+
+      function setCollapsed(collapsed) {
+        $sidebar.classList.toggle("is-collapsed", collapsed);
+        $expandPill.classList.toggle("show", collapsed);
+      }
+
+      $collapseBtn.addEventListener("click", () => setCollapsed(true));
+      $expandPill.addEventListener("click", () => setCollapsed(false));
+
+      function renderListGrouped(items, groupMode, onSelect) {
+        $list.innerHTML = "";
+
+        const grouped = new Map();
+        for (const f of items) {
+          const key = getGroupKey(f, groupMode);
+          if (!grouped.has(key)) grouped.set(key, []);
+          grouped.get(key).push(f);
+        }
+
+        const groupKeys =
+          groupMode === "none"
+            ? ["All"]
+            : Array.from(grouped.keys()).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
+        let shownCount = 0;
+
+        for (const key of groupKeys) {
+          const groupItems = grouped.get(key) ?? items;
+
+          if (groupMode !== "none") {
+            const header = document.createElement("div");
+            header.className = "sectionHeader";
+            header.textContent = key;
+            $list.appendChild(header);
+          }
+
+          for (const f of groupItems) {
+            shownCount++;
+
+            const row = document.createElement("div");
+            row.className = "row";
+            row.dataset.id = String(f.id);
+
+            row.innerHTML = `
+              <p class="rowTitle">${f.name ?? "Untitled"}</p>
+              <p class="rowSub">${f.subtitle ?? ""}</p>
+            `;
+
+            row.addEventListener("click", () => onSelect(f));
+            $list.appendChild(row);
+          }
+
+          if (groupMode === "none") break;
+        }
+
+        $count.textContent = String(shownCount);
+      }
+
+      // ---------- Map ----------
+      function makeMarker(f) {
+        const coord = new mapkit.Coordinate(f.lat, f.lng);
+
+        const marker = new mapkit.MarkerAnnotation(coord, {
+          title: f.name,
+          subtitle: f.subtitle
+          // No glyphText => default marker style
+        });
+
+        // clustering
+        marker.clusteringIdentifier = "festival";
+
+        marker.data = f;
+        return marker;
+      }
+
+      function applySystemColorScheme(map) {
+        const mql = window.matchMedia?.("(prefers-color-scheme: dark)");
+        const set = () => {
+          const isDark = !!mql?.matches;
+
+          // MapKit JS supports color schemes; this is the common API shape.
+          // If Apple changes names, this will just no-op safely.
+          try {
+            const cs = mapkit?.Map?.ColorSchemes;
+            if (cs) map.colorScheme = isDark ? cs.Dark : cs.Light;
+          } catch (_) {}
+        };
+
+        set();
+        if (mql?.addEventListener) mql.addEventListener("change", set);
+        else if (mql?.addListener) mql.addListener(set);
+      }
+
+      // ---------- Main ----------
+      async function main() {
+        await waitForMapKit();
+
+        const map = new mapkit.Map("map", {
+          showsCompass: mapkit.FeatureVisibility.Visible,
+          showsZoomControl: true
+        });
+
+        applySystemColorScheme(map);
+
+        const allFestivals = await loadFestivals();
+
+        // Create annotations + lookup
+        const annotations = allFestivals.map(makeMarker);
+        const byId = new Map();
+        for (const a of annotations) {
+          if (a?.data?.id != null) byId.set(String(a.data.id), a);
+        }
+
+        map.addAnnotations(annotations);
+        map.showItems(annotations, { animate: false, padding: new mapkit.Padding(60,60,60,60) });
+
+        // Clicking a cluster zooms in to expand
+        map.addEventListener("select", (event) => {
+          const a = event.annotation;
+          if (!a) return;
+
+          if (Array.isArray(a.memberAnnotations) && a.memberAnnotations.length > 1) {
+            map.showItems(a.memberAnnotations, { animate: true, padding: new mapkit.Padding(60,60,60,60) });
+            map.deselectAnnotation(a);
+          }
+        });
+
+        function focusFestival(f) {
+          const ann = byId.get(String(f.id));
+          if (!ann) return;
+
+          map.setCenterAnimated(ann.coordinate);
+          map.setZoomLevelAnimated(10);
+          map.selectAnnotation(ann);
+
+          // Optional: auto-collapse sidebar on mobile when selecting
+          if (window.matchMedia("(max-width: 640px)").matches) setCollapsed(true);
+        }
+
+        function getFilteredAndSorted() {
+          const q = normalize($search.value).trim();
+          const groupMode = $group.value;
+          const sortMode = $sort.value;
+
+          const filtered = !q
+            ? allFestivals
+            : allFestivals.filter(f => {
+                const hay = `${f.name ?? ""} ${f.city ?? ""} ${f.state ?? ""} ${f.stateName ?? ""} ${f.status ?? ""}`.toLowerCase();
+                return hay.includes(q);
+              });
+
+          const sorted = sortFestivals(filtered, sortMode);
+
+          return { items: sorted, groupMode };
+        }
+
+        function rerender() {
+          const { items, groupMode } = getFilteredAndSorted();
+          renderListGrouped(items, groupMode, focusFestival);
+        }
+
+        // Initial render
+        rerender();
+
+        // Controls
+        $search.addEventListener("input", rerender);
+        $group.addEventListener("change", rerender);
+        $sort.addEventListener("change", rerender);
+      }
+
+      main().catch(err => {
+        console.error(err);
+        document.body.innerHTML =
+          `<pre style="padding:16px;white-space:pre-wrap">Error:\n${err?.message || err}</pre>`;
+      });
+    </script>
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"11660f41b0ec4495bfda86fd385e9f15","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
