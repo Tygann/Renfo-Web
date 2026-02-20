@@ -570,6 +570,10 @@
         overflow: hidden;
       }
 
+      #detailSidebar.is-closing {
+        pointer-events: none;
+      }
+
       #detailSidebar[hidden] {
         display: none !important;
       }
@@ -1052,6 +1056,14 @@
           border-radius: 22px 22px 0 0;
           z-index: 30;
           padding-bottom: 0;
+          transition: transform 220ms ease, opacity 180ms ease;
+          transform: translateY(0);
+          opacity: 1;
+        }
+
+        #detailSidebar.is-closing {
+          transform: translateY(calc(100% + max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)) + 18px));
+          opacity: 0;
         }
 
         #sidebar.options-open {
@@ -1447,16 +1459,16 @@
       let mobileSheetState = "peek";
       let mobileSheetOffset = 0;
       let mobileSheetDrag = null;
+      let detailCloseTimer = null;
 
       function syncBrowserBottomInset() {
         const vv = window.visualViewport;
         let bottomInset = 0;
         if (vv) {
-          const layoutHeight = Math.max(
-            document.documentElement?.clientHeight || 0,
-            window.innerHeight || 0
-          );
-          bottomInset = Math.max(0, Math.round(layoutHeight - (vv.height + vv.offsetTop)));
+          const innerDelta = Math.round((window.innerHeight || 0) - vv.height);
+          const clientDelta = Math.round((document.documentElement?.clientHeight || 0) - vv.height);
+          const offsetDelta = Math.round((window.innerHeight || 0) - (vv.height + vv.offsetTop));
+          bottomInset = Math.max(0, innerDelta, clientDelta, offsetDelta);
           // Ignore on-screen keyboard insets; this offset is for browser chrome overlap.
           if (bottomInset > 140) bottomInset = 0;
         }
@@ -1635,7 +1647,17 @@
           document.body.classList.remove("mobile-detail-open");
           return;
         }
-        document.body.classList.toggle("mobile-detail-open", !!isOpen);
+        if (isOpen) {
+          document.body.classList.add("mobile-detail-open");
+          return;
+        }
+
+        // Bring list sheet back instantly; detail panel owns the close animation.
+        $sidebar.style.transition = "none";
+        document.body.classList.remove("mobile-detail-open");
+        requestAnimationFrame(() => {
+          $sidebar.style.removeProperty("transition");
+        });
       }
 
       function updateSearchClearVisibility() {
@@ -2012,10 +2034,37 @@
         if (!f) {
           $detailResources.innerHTML = "";
           $detailResourcesCard.hidden = true;
-          $detailSidebar.hidden = true;
-          syncMobileDetailSheetState(false);
+          if (detailCloseTimer) {
+            clearTimeout(detailCloseTimer);
+            detailCloseTimer = null;
+          }
+
+          if ($detailSidebar.hidden) {
+            syncMobileDetailSheetState(false);
+            return;
+          }
+
+          if (isMobileViewport()) {
+            $detailSidebar.classList.add("is-closing");
+            syncMobileDetailSheetState(false);
+            detailCloseTimer = setTimeout(() => {
+              $detailSidebar.hidden = true;
+              $detailSidebar.classList.remove("is-closing");
+              detailCloseTimer = null;
+            }, 190);
+          } else {
+            $detailSidebar.classList.remove("is-closing");
+            $detailSidebar.hidden = true;
+            syncMobileDetailSheetState(false);
+          }
           return;
         }
+
+        if (detailCloseTimer) {
+          clearTimeout(detailCloseTimer);
+          detailCloseTimer = null;
+        }
+        $detailSidebar.classList.remove("is-closing");
 
         setImageWithFallback($detailHeroLogo, f.logoAssetUrl);
         $detailTitle.textContent = f.name ?? "Untitled";
