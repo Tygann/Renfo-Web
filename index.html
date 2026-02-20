@@ -78,16 +78,6 @@
         height: auto;
       }
 
-      #viewportProbe {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 0;
-        height: 100vh;
-        pointer-events: none;
-        visibility: hidden;
-      }
-
       /* Sidebar */
       #sidebar {
         position: absolute;
@@ -949,15 +939,27 @@
         #sidebar {
           left: 0;
           right: 0;
-          bottom: max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px));
+          bottom: 0;
           top: auto;
           width: auto;
-          max-height: min(88svh, calc(100svh - max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)) - 8px));
+          max-height: min(88svh, calc(100svh - 8px));
           border-radius: 22px 22px 0 0;
           border-left: 1px solid var(--panel-border);
           transform: translateY(var(--mobile-list-offset, 0px));
           transition: transform 220ms ease, opacity 180ms ease;
           opacity: 1;
+        }
+
+        body.mobile-mode::after {
+          content: "";
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          height: max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px));
+          background: var(--ios-browser-chrome);
+          z-index: 25;
+          pointer-events: none;
         }
 
         #sidebar.is-collapsed {
@@ -1059,7 +1061,6 @@
         body.mobile-mode.mobile-detail-open #sidebar {
           transform: translateY(calc(100% + max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)) + 72px)) !important;
           opacity: 0;
-          visibility: hidden;
           pointer-events: none;
         }
       }
@@ -1085,8 +1086,6 @@
   </head>
 
   <body>
-    <div id="viewportProbe" aria-hidden="true"></div>
-
     <button id="expandPill" type="button" aria-label="Expand sidebar">
       <span class="icon" aria-hidden="true">
         <!-- panel toggle icon -->
@@ -1441,7 +1440,6 @@
       const $detailAddressLine3 = document.getElementById("detailAddressLine3");
       const $detailResourcesCard = document.getElementById("detailResourcesCard");
       const $detailResources = document.getElementById("detailResources");
-      const $viewportProbe = document.getElementById("viewportProbe");
       let selectedFestivalId = null;
       let detailRenderVersion = 0;
       const resourceAssetExistsCache = new Map();
@@ -1453,21 +1451,15 @@
       function syncBrowserBottomInset() {
         const vv = window.visualViewport;
         let bottomInset = 0;
-        const visualHeight = Math.round(vv?.height || window.innerHeight || 0);
-        const probeHeight = Math.round($viewportProbe?.getBoundingClientRect().height || 0);
-        const deltaFromVh = Math.max(0, probeHeight - visualHeight);
-
-        const layoutHeight = Math.max(
-          document.documentElement?.clientHeight || 0,
-          window.innerHeight || 0
-        );
-        const deltaFromOffset = vv
-          ? Math.max(0, Math.round(layoutHeight - (vv.height + vv.offsetTop)))
-          : 0;
-
-        bottomInset = Math.max(deltaFromVh, deltaFromOffset);
-        // Ignore on-screen keyboard insets; this offset is for browser chrome overlap.
-        if (bottomInset > 220) bottomInset = 0;
+        if (vv) {
+          const layoutHeight = Math.max(
+            document.documentElement?.clientHeight || 0,
+            window.innerHeight || 0
+          );
+          bottomInset = Math.max(0, Math.round(layoutHeight - (vv.height + vv.offsetTop)));
+          // Ignore on-screen keyboard insets; this offset is for browser chrome overlap.
+          if (bottomInset > 140) bottomInset = 0;
+        }
         document.documentElement.style.setProperty("--browser-bottom-inset", `${bottomInset}px`);
       }
 
