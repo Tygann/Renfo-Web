@@ -2257,9 +2257,13 @@
             return;
           }
 
-          if (a.data) {
-            selectFestival(a.data, { annotation: a });
+          const festivalId = a?.data?.id;
+          if (festivalId == null || !byId.has(String(festivalId))) {
+            // Ignore non-festival annotations (for example user location).
+            return;
           }
+
+          selectFestival(a.data, { annotation: a });
         });
 
         function focusFestival(f) {
