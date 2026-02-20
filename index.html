@@ -162,8 +162,8 @@
       }
 
       .icon {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
         flex: 0 0 auto;
         display: inline-block;
       }
@@ -552,7 +552,7 @@
       #detailSidebar {
         position: absolute;
         top: 16px;
-        left: 372px;
+        left: 388px;
         z-index: 19;
         width: 348px;
         max-height: calc(100dvh - 32px);
@@ -560,7 +560,7 @@
         flex-direction: column;
         background: var(--panel-bg);
         border: 0;
-        border-radius: 0 28px 28px 0;
+        border-radius: 28px;
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         box-shadow: var(--shadow);
@@ -572,7 +572,7 @@
       }
 
       body.list-collapsed #detailSidebar {
-        left: 16px;
+        left: 72px;
         border-left: 0;
         border-radius: 28px;
       }
@@ -735,8 +735,8 @@
       }
 
       .detailSocialIcon {
-        width: 18px;
-        height: 18px;
+        width: 24px;
+        height: 24px;
         display: block;
       }
 
@@ -963,7 +963,7 @@
         }
 
         #sidebarHeader {
-          padding-top: 24px;
+          padding-top: 14px;
         }
 
         #brandLeft {
@@ -2177,8 +2177,16 @@
         map.showItems(annotations, { animate: false, padding: new mapkit.Padding(60,60,60,60) });
 
         let selectedAnnotation = null;
+        let pendingMapSelectionTimer = null;
+
+        function clearPendingMapSelection() {
+          if (!pendingMapSelectionTimer) return;
+          clearTimeout(pendingMapSelectionTimer);
+          pendingMapSelectionTimer = null;
+        }
 
         function clearFestivalSelection() {
+          clearPendingMapSelection();
           selectedFestivalId = null;
           updateDetailPanel(null);
           rerender();
@@ -2195,6 +2203,7 @@
           if (!f) return;
           const { zoomToFestival = false, annotation = null } = options;
           const ann = annotation ?? byId.get(String(f.id)) ?? null;
+          clearPendingMapSelection();
 
           selectedFestivalId = f.id;
           updateDetailPanel(f);
@@ -2202,14 +2211,35 @@
 
           if (!ann) return;
 
+          if (selectedAnnotation && selectedAnnotation !== ann) {
+            try {
+              map.deselectAnnotation(selectedAnnotation);
+            } catch (_) {}
+          }
+
           selectedAnnotation = ann;
           if (zoomToFestival) {
-            map.setCenterAnimated(ann.coordinate);
-            map.setZoomLevelAnimated(10);
+            map.showItems([ann], {
+              animate: true,
+              padding: new mapkit.Padding(90, 90, 90, 90)
+            });
           }
 
           if (!annotation) {
-            map.selectAnnotation(ann);
+            const applyMapSelection = () => {
+              try {
+                map.selectAnnotation(ann);
+              } catch (_) {}
+            };
+
+            if (zoomToFestival) {
+              pendingMapSelectionTimer = setTimeout(() => {
+                pendingMapSelectionTimer = null;
+                applyMapSelection();
+              }, 260);
+            } else {
+              applyMapSelection();
+            }
           }
         }
 
