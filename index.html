@@ -296,6 +296,12 @@
         transition: transform 160ms ease;
       }
 
+      .optionsChevron svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
       .optionsRow.is-open .optionsChevron {
         transform: rotate(90deg);
       }
@@ -400,6 +406,12 @@
         height: 16px;
         opacity: 0.6;
         pointer-events: none;
+      }
+
+      #searchIcon svg {
+        width: 100%;
+        height: 100%;
+        display: block;
       }
 
       #search {
@@ -680,7 +692,10 @@
         width: 100%;
         height: 100%;
         display: block;
-        fill: currentColor;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
 
       .detailActionLabel {
@@ -744,7 +759,48 @@
         width: 100%;
         height: 100%;
         display: block;
-        fill: currentColor;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      #detailEstablishedRow {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: 0 auto;
+        color: var(--subtext);
+        font-size: 18px;
+        font-weight: 650;
+        letter-spacing: 0.1px;
+        line-height: 1;
+      }
+
+      #detailEstablishedRow[hidden] {
+        display: none !important;
+      }
+
+      .detailEstablishedLaurel {
+        width: 30px;
+        height: 30px;
+        display: inline-block;
+        color: color-mix(in srgb, var(--subtext) 88%, var(--text) 12%);
+      }
+
+      .detailEstablishedLaurel svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .detailEstablishedLaurel.is-right {
+        transform: scaleX(-1);
       }
 
       .detailInfoRow {
@@ -839,6 +895,10 @@
         width: 100%;
         height: 100%;
         display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
 
       .detailResourceLabel {
@@ -1101,17 +1161,13 @@
         window.RENFO_CONFIG.MAPKIT_TOKEN
       );
     </script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   </head>
 
   <body>
     <button id="expandPill" type="button" aria-label="Expand sidebar">
       <span class="icon" aria-hidden="true">
-        <!-- panel toggle icon -->
-        <svg viewBox="0 0 24 24" fill="none">
-          <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" stroke="currentColor" stroke-width="1.9" />
-          <rect x="5.8" y="7.8" width="4.4" height="8.4" rx="1.2" fill="currentColor" />
-          <path d="M12 8v8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
-        </svg>
+        <i data-lucide="columns"></i>
       </span>
     </button>
 
@@ -1130,23 +1186,13 @@
           <div id="headerActions">
             <button id="optionsBtn" type="button" class="iconButton" aria-label="Display grouping and sorting options" title="Options">
               <span class="icon" aria-hidden="true">
-                <!-- three-dot menu icon -->
-                <svg viewBox="0 0 24 24" fill="none">
-                  <circle cx="7" cy="12" r="1.8" fill="currentColor" />
-                  <circle cx="12" cy="12" r="1.8" fill="currentColor" />
-                  <circle cx="17" cy="12" r="1.8" fill="currentColor" />
-                </svg>
+                <i data-lucide="more-horizontal"></i>
               </span>
             </button>
 
             <button id="collapseBtn" class="iconButton" aria-label="Collapse sidebar" title="Collapse">
               <span class="icon" aria-hidden="true">
-                <!-- panel toggle icon -->
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" stroke="currentColor" stroke-width="1.9" />
-                  <rect x="5.8" y="7.8" width="4.4" height="8.4" rx="1.2" fill="currentColor" />
-                  <path d="M12 8v8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
-                </svg>
+                <i data-lucide="columns"></i>
               </span>
             </button>
           </div>
@@ -1155,20 +1201,14 @@
         <div id="optionsMenu" hidden>
           <button id="groupMenuRow" class="optionsRow" type="button" aria-label="Group by setting" aria-expanded="false">
             <span class="optionsIcon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3.5" y="5.5" width="17" height="13" rx="2.4" stroke="currentColor" stroke-width="1.8" />
-                <path d="M8.7 8v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                <path d="M11.8 9h6.3M11.8 12h6.3M11.8 15h6.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-              </svg>
+              <i data-lucide="list"></i>
             </span>
             <span class="optionsText">
               <p class="optionsTitle">Group By</p>
               <p id="groupSummary" class="optionsValue">None</p>
             </span>
             <span class="optionsChevron" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <i data-lucide="chevron-right"></i>
             </span>
           </button>
           <div id="groupChoices" class="optionsChoices" hidden>
@@ -1179,19 +1219,14 @@
 
           <button id="sortMenuRow" class="optionsRow" type="button" aria-label="Sort by setting" aria-expanded="false">
             <span class="optionsIcon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M8 5v14M8 5l-3 3M8 5l3 3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M16 19V5M16 19l-3-3M16 19l3-3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <i data-lucide="arrow-up-down"></i>
             </span>
             <span class="optionsText">
               <p class="optionsTitle">Sort By</p>
               <p id="sortSummary" class="optionsValue">Name</p>
             </span>
             <span class="optionsChevron" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <i data-lucide="chevron-right"></i>
             </span>
           </button>
           <div id="sortChoices" class="optionsChoices" hidden>
@@ -1202,16 +1237,11 @@
 
         <div id="searchWrap">
           <span id="searchIcon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="11" cy="11" r="6.2" stroke="currentColor" stroke-width="2" />
-              <path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            </svg>
+            <i data-lucide="search"></i>
           </span>
           <input id="search" type="search" placeholder="Search" autocomplete="off" />
           <button id="searchClearBtn" type="button" aria-label="Clear search" title="Clear search" hidden>
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M7.4 7.4 16.6 16.6M16.6 7.4 7.4 16.6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
-            </svg>
+            <i data-lucide="x" aria-hidden="true"></i>
           </button>
         </div>
 
@@ -1243,9 +1273,7 @@
       <div id="detailHeader">
         <button id="detailCloseBtn" type="button" class="iconButton" aria-label="Close festival details" title="Close details">
           <span class="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
-            </svg>
+            <i data-lucide="x"></i>
           </span>
         </button>
       </div>
@@ -1261,27 +1289,19 @@
         <section id="detailActions">
           <a id="detailActionDirections" class="detailAction" href="#" aria-label="Get directions">
             <span class="detailActionIcon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="9" fill="currentColor" />
-                <path d="M9.2 14.8v-3.5c0-1 .8-1.8 1.8-1.8h4" stroke="rgba(0,0,0,0.46)" stroke-width="2" stroke-linecap="round" />
-                <path d="M13 7.6h3v3" stroke="rgba(0,0,0,0.46)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <i data-lucide="navigation"></i>
             </span>
             <span class="detailActionLabel">Directions</span>
           </a>
           <a id="detailActionCall" class="detailAction" href="#" aria-label="Call festival">
             <span class="detailActionIcon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path d="M6.3 3.4a1 1 0 0 0-1 .9c-.2 2.2.2 4.5 1.1 6.7a18.6 18.6 0 0 0 6.6 8.1c2 1.3 4.2 2.1 6.4 2.4a1 1 0 0 0 1.1-.8l.9-4a1 1 0 0 0-.6-1.1l-3.8-1.5a1 1 0 0 0-1.1.3l-1.5 1.8a14 14 0 0 1-4.8-5L11.3 10a1 1 0 0 0 .3-1L10 5.1a1 1 0 0 0-1-.7l-2.7-.9Z"/>
-              </svg>
+              <i data-lucide="phone"></i>
             </span>
             <span class="detailActionLabel">Call</span>
           </a>
           <a id="detailActionWebsite" class="detailAction" href="#" aria-label="Open website">
             <span class="detailActionIcon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 2.8a9.2 9.2 0 1 0 0 18.4 9.2 9.2 0 0 0 0-18.4Zm2.9 5.5-2 5.1a1.1 1.1 0 0 1-.6.6l-5.1 2 2-5.1c.1-.3.3-.5.6-.6l5.1-2Z"/>
-              </svg>
+              <i data-lucide="globe"></i>
             </span>
             <span class="detailActionLabel">Website</span>
           </a>
@@ -1321,6 +1341,16 @@
 
         <section id="detailSocialCard" hidden>
           <div id="detailSocials"></div>
+        </section>
+
+        <section id="detailEstablishedRow" hidden>
+          <span class="detailEstablishedLaurel" aria-hidden="true">
+            <i data-lucide="leaf"></i>
+          </span>
+          <span id="detailEstablishedValue"></span>
+          <span class="detailEstablishedLaurel is-right" aria-hidden="true">
+            <i data-lucide="leaf"></i>
+          </span>
         </section>
       </div>
     </div>
@@ -1458,6 +1488,8 @@
       const $detailAddressLine3 = document.getElementById("detailAddressLine3");
       const $detailResourcesCard = document.getElementById("detailResourcesCard");
       const $detailResources = document.getElementById("detailResources");
+      const $detailEstablishedRow = document.getElementById("detailEstablishedRow");
+      const $detailEstablishedValue = document.getElementById("detailEstablishedValue");
       let selectedFestivalId = null;
       let detailRenderVersion = 0;
       const resourceAssetExistsCache = new Map();
@@ -1867,6 +1899,19 @@
         return String(value);
       }
 
+      function getEstablishedYear(value) {
+        if (typeof value === "number" && Number.isFinite(value)) {
+          const year = Math.trunc(value);
+          return year >= 1500 && year <= 2100 ? year : null;
+        }
+
+        const raw = String(value ?? "").trim();
+        if (!raw) return null;
+        const match = raw.match(/\b(1[5-9]\d{2}|20\d{2}|2100)\b/);
+        if (!match) return null;
+        return Number(match[1]);
+      }
+
       function buildDirectionsHref(f) {
         if (f.lat != null && f.lng != null) {
           return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${f.lat},${f.lng}`)}`;
@@ -1917,17 +1962,30 @@
         return null;
       }
 
+      function getLucideIconMarkup(name) {
+        return `<i data-lucide="${name}" aria-hidden="true"></i>`;
+      }
+
+      function refreshLucideIcons() {
+        if (!window.lucide?.createIcons) return;
+        window.lucide.createIcons({
+          attrs: { "stroke-width": "2.1" }
+        });
+      }
+
+      window.addEventListener("load", refreshLucideIcons);
+
       function getSocialIconSvg(platform) {
         if (platform === "facebook") {
-          return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 8H16V5h-2.5C10.8 5 9 6.9 9 9.6V12H7v3h2v4h3v-4h2.6l.4-3H12V9.8c0-1 .5-1.8 1.5-1.8Z"/></svg>`;
+          return getLucideIconMarkup("facebook");
         }
         if (platform === "instagram") {
-          return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 3h9A4.5 4.5 0 0 1 21 7.5v9a4.5 4.5 0 0 1-4.5 4.5h-9A4.5 4.5 0 0 1 3 16.5v-9A4.5 4.5 0 0 1 7.5 3Zm0 2A2.5 2.5 0 0 0 5 7.5v9A2.5 2.5 0 0 0 7.5 19h9a2.5 2.5 0 0 0 2.5-2.5v-9A2.5 2.5 0 0 0 16.5 5h-9ZM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm4.5-3a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"/></svg>`;
+          return getLucideIconMarkup("instagram");
         }
         if (platform === "youtube") {
-          return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 8.2c-.2-1-1-1.8-2-2-1.8-.4-6.4-.4-6.4-.4s-4.6 0-6.4.4c-1 .2-1.8 1-2 2-.4 1.8-.4 3.8-.4 3.8s0 2 .4 3.8c.2 1 1 1.8 2 2 1.8.4 6.4.4 6.4.4s4.6 0 6.4-.4c1-.2 1.8-1 2-2 .4-1.8.4-3.8.4-3.8s0-2-.4-3.8ZM10 14.6V9.4L14.8 12 10 14.6Z"/></svg>`;
+          return getLucideIconMarkup("youtube");
         }
-        return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.8 4h-2.7l-4 4.6L8.8 4H4l5.8 7.3L4.3 20H7l4.2-4.8 3.9 4.8H20l-6.1-7.5L18.8 4Z"/></svg>`;
+        return getLucideIconMarkup("twitter");
       }
 
       function getSocialEntries(f) {
@@ -1948,15 +2006,15 @@
 
       function getResourceIconSvg(type) {
         if (type === "camp") {
-          return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 19h16M8 19l4-12 4 12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 10.2 9.2 14h5.6L12 10.2Z" fill="currentColor"/></svg>`;
+          return getLucideIconMarkup("home");
         }
         if (type === "tickets") {
-          return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 8.3a1.8 1.8 0 0 0 0 3.4v4.2a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-4.2a1.8 1.8 0 0 0 0-3.4V4.1a1 1 0 0 0-1-1h-13a1 1 0 0 0-1 1v4.2Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 6.3v11.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="1.8 2.2"/></svg>`;
+          return getLucideIconMarkup("ticket");
         }
         if (type === "lostFound") {
-          return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4.2 5.2 7.3v5.4c0 4.2 2.8 6.8 6.8 8.9 4-2.1 6.8-4.7 6.8-8.9V7.3L12 4.2Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="11" r="2.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 13.2v2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+          return getLucideIconMarkup("shield");
         }
-        return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.5 6.5 9 4.6l6 1.9 5.5-1.9v13L15 19.4 9 17.5l-5.5 1.9v-13Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 4.6v13M15 6.5v12.9" stroke="currentColor" stroke-width="1.8"/></svg>`;
+        return getLucideIconMarkup("map");
       }
 
       function normalizeResourceHref(rawValue) {
@@ -2022,16 +2080,13 @@
           link.innerHTML = `
             <span class="detailResourceIcon">${getResourceIconSvg(resource.type)}</span>
             <span class="detailResourceLabel">${resource.label}</span>
-            <span class="detailResourceChevron" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </span>
+            <span class="detailResourceChevron" aria-hidden="true">${getLucideIconMarkup("chevron-right")}</span>
           `;
           $detailResources.appendChild(link);
         }
 
         $detailResourcesCard.hidden = $detailResources.childElementCount === 0;
+        refreshLucideIcons();
       }
 
       function updateDetailPanel(f) {
@@ -2039,6 +2094,8 @@
         if (!f) {
           $detailResources.innerHTML = "";
           $detailResourcesCard.hidden = true;
+          $detailEstablishedValue.textContent = "";
+          $detailEstablishedRow.hidden = true;
           $detailSidebar.hidden = true;
           syncMobileDetailSheetState(false);
           return;
@@ -2052,6 +2109,15 @@
           $detailStatus.hidden = false;
         } else {
           $detailStatus.hidden = true;
+        }
+
+        const establishedYear = getEstablishedYear(f.established);
+        if (establishedYear) {
+          $detailEstablishedValue.textContent = `Est. ${establishedYear}`;
+          $detailEstablishedRow.hidden = false;
+        } else {
+          $detailEstablishedValue.textContent = "";
+          $detailEstablishedRow.hidden = true;
         }
 
         const dateRange = formatDateRange(f);
@@ -2107,6 +2173,7 @@
             $detailSocials.appendChild(a);
           }
           $detailSocialCard.hidden = false;
+          refreshLucideIcons();
         } else {
           $detailSocialCard.hidden = true;
         }
@@ -2155,6 +2222,7 @@
 
       // ---------- Main ----------
       async function main() {
+        refreshLucideIcons();
         await waitForMapKit();
 
         const map = new mapkit.Map("map", {
