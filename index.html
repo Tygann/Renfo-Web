@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#2c2c2e" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1c1c1e" />
+    <meta name="apple-itunes-app" content="app-id=6502414968, app-argument=https://renfo.app" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Renfo" />
@@ -15,8 +17,7 @@
 
     <style>
       :root {
-        color-scheme: dark;
-        --ios-browser-chrome: #2c2c2e;
+        --ios-browser-chrome: #f2f2f7;
         --panel-bg: rgba(255, 255, 255, 0.88);
         --panel-border: rgba(0, 0, 0, 0.08);
         --shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
@@ -35,7 +36,7 @@
 
       @media (prefers-color-scheme: dark) {
         :root {
-          --ios-browser-chrome: #1f1f22;
+          --ios-browser-chrome: #1c1c1e;
           --panel-bg: rgba(30, 30, 30, 0.78);
           --panel-border: rgba(255, 255, 255, 0.10);
           --shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
@@ -53,10 +54,28 @@
         }
       }
 
-      html, body { height: 100%; margin: 0; background: var(--ios-browser-chrome); }
-      body { overflow: hidden; color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+      html {
+        height: 100%;
+        height: -webkit-fill-available;
+      }
 
-      #map { height: 100%; width: 100%; }
+      body {
+        margin: 0;
+        min-height: 100%;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
+        overflow: hidden;
+        background: var(--ios-browser-chrome);
+        color: var(--text);
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      #map {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: auto;
+      }
 
       /* Sidebar */
       #sidebar {
@@ -65,7 +84,7 @@
         left: 16px;
         z-index: 20;
         width: 360px;
-        max-height: calc(100% - 32px);
+        max-height: calc(100dvh - 32px);
         display: flex;
         flex-direction: column;
 
@@ -537,7 +556,7 @@
         left: 372px;
         z-index: 19;
         width: 348px;
-        max-height: calc(100% - 32px);
+        max-height: calc(100dvh - 32px);
         display: flex;
         flex-direction: column;
         background: var(--panel-bg);
@@ -919,10 +938,10 @@
         #sidebar {
           left: 0;
           right: 0;
-          bottom: 0;
+          bottom: env(safe-area-inset-bottom, 0px);
           top: auto;
           width: auto;
-          max-height: min(88vh, calc(100% - 8px));
+          max-height: min(88dvh, calc(100dvh - env(safe-area-inset-bottom, 0px) - 8px));
           border-radius: 22px 22px 0 0;
           border-left: 1px solid var(--panel-border);
           transform: translateY(var(--mobile-list-offset, 0px));
@@ -1012,13 +1031,13 @@
           right: 0;
           width: auto;
           top: auto;
-          bottom: 0;
-          height: min(92vh, calc(100% - 8px));
-          max-height: min(92vh, calc(100% - 8px));
+          bottom: env(safe-area-inset-bottom, 0px);
+          height: min(92dvh, calc(100dvh - env(safe-area-inset-bottom, 0px) - 8px));
+          max-height: min(92dvh, calc(100dvh - env(safe-area-inset-bottom, 0px) - 8px));
           border-left: 1px solid var(--panel-border);
           border-radius: 22px 22px 0 0;
           z-index: 30;
-          padding-bottom: env(safe-area-inset-bottom, 0px);
+          padding-bottom: 0;
         }
 
         #sidebar.options-open {
@@ -1034,24 +1053,6 @@
 
     <!-- MapKit JS -->
     <script src="/config.js"></script>
-    <script>
-      (() => {
-        const appId = String(window.RENFO_CONFIG?.IOS_SMART_BANNER_APP_ID || "").trim();
-        if (!appId) return;
-        const appArgument = String(window.RENFO_CONFIG?.IOS_SMART_BANNER_APP_ARGUMENT || "").trim();
-        const content = appArgument
-          ? `app-id=${appId}, app-argument=${appArgument}`
-          : `app-id=${appId}`;
-
-        let meta = document.querySelector('meta[name="apple-itunes-app"]');
-        if (!meta) {
-          meta = document.createElement("meta");
-          meta.name = "apple-itunes-app";
-          document.head.appendChild(meta);
-        }
-        meta.content = content;
-      })();
-    </script>
     <script
       src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js"
       crossorigin
