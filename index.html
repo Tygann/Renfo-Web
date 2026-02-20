@@ -90,8 +90,8 @@
         flex-direction: column;
 
         background: var(--panel-bg);
-        border: 1px solid var(--panel-border);
-        border-radius: 18px;
+        border: 0;
+        border-radius: 28px;
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         box-shadow: var(--shadow);
@@ -108,7 +108,7 @@
       #sidebarHeader {
         position: relative;
         padding: 14px 14px 10px 14px;
-        border-bottom: 1px solid var(--panel-border);
+        border-bottom: 0;
       }
 
       #sidebarGrabber {
@@ -179,15 +179,16 @@
       }
 
       .iconButton {
-        border: 1px solid var(--panel-border);
-        background: var(--control-bg);
+        border: 0;
+        background: color-mix(in srgb, var(--control-bg) 86%, rgba(18,18,22,0.22));
         color: var(--text);
-        border-radius: 12px;
-        padding: 8px 10px;
+        border-radius: 999px;
+        padding: 0;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        justify-content: center;
+        gap: 0;
         transition: box-shadow 150ms ease, transform 120ms ease;
       }
 
@@ -198,10 +199,8 @@
       .iconButton:active { transform: translateY(0.5px); }
 
       #optionsBtn {
-        width: 38px;
-        height: 38px;
-        padding: 0;
-        justify-content: center;
+        width: 44px;
+        height: 44px;
       }
 
       #optionsBtn.is-menu-open {
@@ -212,10 +211,8 @@
 
       #collapseBtn,
       #detailCloseBtn {
-        width: 38px;
-        height: 38px;
-        padding: 0;
-        justify-content: center;
+        width: 44px;
+        height: 44px;
       }
 
       #optionsMenu {
@@ -225,8 +222,8 @@
         z-index: 40;
         width: min(212px, calc(100% - 28px));
         padding: 8px 8px 10px 8px;
-        border-radius: 22px;
-        border: 1px solid color-mix(in srgb, var(--panel-border) 60%, rgba(255,255,255,0.24));
+        border-radius: 24px;
+        border: 0;
         background: color-mix(in srgb, var(--panel-bg) 82%, rgba(10,10,14,0.56));
         color: var(--text);
         box-shadow: 0 16px 34px rgba(0,0,0,0.32);
@@ -342,7 +339,7 @@
         display: block;
         height: 1px;
         margin: 2px 12px 6px 12px;
-        background: var(--panel-border);
+        background: var(--row-sep);
       }
 
       .optionsChoices[hidden] {
@@ -407,12 +404,12 @@
       #search {
         width: 100%;
         box-sizing: border-box;
-        border: 1px solid var(--panel-border);
-        border-radius: 12px;
-        padding: 10px 34px 10px 34px;
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 36px 12px 36px;
         font-size: 14px;
         outline: none;
-        background: var(--control-bg);
+        background: color-mix(in srgb, var(--control-bg) 82%, rgba(18,18,22,0.18));
         color: var(--text);
       }
 
@@ -486,15 +483,15 @@
       #list {
         overflow: auto;
         -webkit-overflow-scrolling: touch;
-        padding: 0 10px 12px 10px;
+        padding: 6px 12px 12px 12px;
         isolation: isolate;
       }
 
       .sectionHeader {
         position: static;
         margin: 0 2px;
-        padding: 8px 10px 6px 10px;
-        font-size: 11px;
+        padding: 10px 10px 8px 10px;
+        font-size: 12px;
         font-weight: 700;
         letter-spacing: 0.3px;
         text-transform: uppercase;
@@ -510,15 +507,15 @@
       }
 
       .sectionGroup {
-        border: 1px solid var(--panel-border);
-        border-radius: 14px;
+        border: 0;
+        border-radius: 24px;
         background: var(--detail-card-bg);
         overflow: hidden;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
       }
 
       .row {
-        padding: 10px 12px;
+        padding: 12px 14px;
         border: 0;
         border-radius: 0;
         background: transparent;
@@ -539,14 +536,14 @@
       .rowMain {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         min-width: 0;
       }
 
       .rowLogo {
-        width: 20px;
-        height: 20px;
-        border-radius: 4px;
+        width: 24px;
+        height: 24px;
+        border-radius: 999px;
         flex: 0 0 auto;
         object-fit: cover;
       }
@@ -561,17 +558,12 @@
         display: flex;
         flex-direction: column;
         background: var(--panel-bg);
-        border: 1px solid var(--panel-border);
-        border-left: 0;
-        border-radius: 0 18px 18px 0;
+        border: 0;
+        border-radius: 0 28px 28px 0;
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         box-shadow: var(--shadow);
         overflow: hidden;
-      }
-
-      #detailSidebar.is-closing {
-        pointer-events: none;
       }
 
       #detailSidebar[hidden] {
@@ -580,8 +572,8 @@
 
       body.list-collapsed #detailSidebar {
         left: 16px;
-        border-left: 1px solid var(--panel-border);
-        border-radius: 18px;
+        border-left: 0;
+        border-radius: 28px;
       }
 
       #detailHeader {
@@ -633,7 +625,7 @@
         display: inline-block;
         padding: 5px 9px;
         border-radius: 999px;
-        border: 1px solid var(--panel-border);
+        border: 0;
         background: var(--control-bg);
         color: var(--subtext);
       }
@@ -654,7 +646,7 @@
       .detailAction {
         border: 0;
         background: var(--detail-action-bg);
-        border-radius: 9px;
+        border-radius: 16px;
         padding: 5px 8px;
         text-decoration: none;
         color: var(--text);
@@ -697,8 +689,8 @@
       }
 
       .detailCard {
-        border: 1px solid var(--panel-border);
-        border-radius: 14px;
+        border: 0;
+        border-radius: 20px;
         background: var(--detail-card-bg);
         overflow: hidden;
       }
@@ -723,19 +715,18 @@
         justify-content: center;
         text-decoration: none;
         color: var(--text);
-        border: 1px solid transparent;
+        border: 0;
         background: transparent;
         border-radius: 999px;
         padding: 0;
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
-        transition: background 150ms ease, border-color 150ms ease, transform 120ms ease;
+        transition: background 150ms ease, transform 120ms ease;
       }
 
       .detailSocialBtn:hover,
       .detailSocialBtn:focus-visible {
         box-shadow: inset 0 0 0 999px var(--row-hover);
-        border-color: var(--panel-border);
       }
 
       .detailSocialBtn:active {
@@ -894,7 +885,7 @@
       }
 
       .rowTitle {
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 400;
         margin: 0;
         line-height: 1.2;
@@ -910,12 +901,12 @@
         left: 16px;
         z-index: 21;
         display: none;
-        border: 1px solid var(--panel-border);
-        background: var(--control-bg);
+        border: 0;
+        background: color-mix(in srgb, var(--control-bg) 86%, rgba(18,18,22,0.22));
         color: var(--text);
-        border-radius: 12px;
-        width: 38px;
-        height: 38px;
+        border-radius: 999px;
+        width: 44px;
+        height: 44px;
         padding: 0;
         box-shadow: var(--shadow);
         cursor: pointer;
@@ -947,8 +938,8 @@
           top: auto;
           width: auto;
           max-height: min(88svh, calc(100svh - 8px));
-          border-radius: 22px 22px 0 0;
-          border-left: 1px solid var(--panel-border);
+          border-radius: 34px 34px 0 0;
+          border-left: 0;
           transform: translateY(var(--mobile-list-offset, 0px));
           transition: transform 220ms ease, opacity 180ms ease;
           opacity: 1;
@@ -997,7 +988,7 @@
         #optionsMenu {
           width: min(212px, calc(100% - 20px));
           padding: 6px;
-          border-radius: 18px;
+          border-radius: 22px;
           transform: translateY(0);
           transform-origin: top right;
         }
@@ -1052,18 +1043,10 @@
           bottom: max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px));
           height: min(92svh, calc(100svh - max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)) - 8px));
           max-height: min(92svh, calc(100svh - max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)) - 8px));
-          border-left: 1px solid var(--panel-border);
-          border-radius: 22px 22px 0 0;
+          border-left: 0;
+          border-radius: 34px 34px 0 0;
           z-index: 30;
           padding-bottom: 0;
-          transition: transform 220ms ease, opacity 180ms ease;
-          transform: translateY(0);
-          opacity: 1;
-        }
-
-        #detailSidebar.is-closing {
-          transform: translateY(calc(100% + max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)) + 18px));
-          opacity: 0;
         }
 
         #sidebar.options-open {
@@ -1074,6 +1057,24 @@
           transform: translateY(calc(100% + max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)) + 72px)) !important;
           opacity: 0;
           pointer-events: none;
+        }
+
+        .row {
+          padding: 14px 16px;
+        }
+
+        .rowMain {
+          gap: 14px;
+        }
+
+        .rowLogo {
+          width: 34px;
+          height: 34px;
+        }
+
+        .rowTitle {
+          font-size: 18px;
+          line-height: 1.18;
         }
       }
     </style>
@@ -1459,7 +1460,6 @@
       let mobileSheetState = "peek";
       let mobileSheetOffset = 0;
       let mobileSheetDrag = null;
-      let detailCloseTimer = null;
 
       function syncBrowserBottomInset() {
         const vv = window.visualViewport;
@@ -1652,7 +1652,7 @@
           return;
         }
 
-        // Bring list sheet back instantly; detail panel owns the close animation.
+        // Bring list sheet back instantly when detail closes.
         $sidebar.style.transition = "none";
         document.body.classList.remove("mobile-detail-open");
         requestAnimationFrame(() => {
@@ -2034,37 +2034,10 @@
         if (!f) {
           $detailResources.innerHTML = "";
           $detailResourcesCard.hidden = true;
-          if (detailCloseTimer) {
-            clearTimeout(detailCloseTimer);
-            detailCloseTimer = null;
-          }
-
-          if ($detailSidebar.hidden) {
-            syncMobileDetailSheetState(false);
-            return;
-          }
-
-          if (isMobileViewport()) {
-            $detailSidebar.classList.add("is-closing");
-            syncMobileDetailSheetState(false);
-            detailCloseTimer = setTimeout(() => {
-              $detailSidebar.hidden = true;
-              $detailSidebar.classList.remove("is-closing");
-              detailCloseTimer = null;
-            }, 190);
-          } else {
-            $detailSidebar.classList.remove("is-closing");
-            $detailSidebar.hidden = true;
-            syncMobileDetailSheetState(false);
-          }
+          $detailSidebar.hidden = true;
+          syncMobileDetailSheetState(false);
           return;
         }
-
-        if (detailCloseTimer) {
-          clearTimeout(detailCloseTimer);
-          detailCloseTimer = null;
-        }
-        $detailSidebar.classList.remove("is-closing");
 
         setImageWithFallback($detailHeroLogo, f.logoAssetUrl);
         $detailTitle.textContent = f.name ?? "Untitled";
