@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1c1c1e" />
-    <meta name="apple-itunes-app" content="app-id=6502414968, app-argument=https://renfo.app" />
+    <meta name="apple-itunes-app" content="app-id=6502414968" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Renfo" />
@@ -18,6 +18,7 @@
     <style>
       :root {
         --ios-browser-chrome: #f2f2f7;
+        --browser-bottom-inset: 0px;
         --panel-bg: rgba(255, 255, 255, 0.88);
         --panel-border: rgba(0, 0, 0, 0.08);
         --shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
@@ -938,10 +939,10 @@
         #sidebar {
           left: 0;
           right: 0;
-          bottom: env(safe-area-inset-bottom, 0px);
+          bottom: max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px));
           top: auto;
           width: auto;
-          max-height: min(88dvh, calc(100dvh - env(safe-area-inset-bottom, 0px) - 8px));
+          max-height: min(88dvh, calc(100dvh - max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)) - 8px));
           border-radius: 22px 22px 0 0;
           border-left: 1px solid var(--panel-border);
           transform: translateY(var(--mobile-list-offset, 0px));
@@ -1023,7 +1024,7 @@
         }
 
         #list {
-          padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+          padding-bottom: calc(12px + max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)));
         }
 
         #detailSidebar {
@@ -1031,9 +1032,9 @@
           right: 0;
           width: auto;
           top: auto;
-          bottom: env(safe-area-inset-bottom, 0px);
-          height: min(92dvh, calc(100dvh - env(safe-area-inset-bottom, 0px) - 8px));
-          max-height: min(92dvh, calc(100dvh - env(safe-area-inset-bottom, 0px) - 8px));
+          bottom: max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px));
+          height: min(92dvh, calc(100dvh - max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)) - 8px));
+          max-height: min(92dvh, calc(100dvh - max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)) - 8px));
           border-left: 1px solid var(--panel-border);
           border-radius: 22px 22px 0 0;
           z-index: 30;
@@ -1433,6 +1434,17 @@
       let mobileSheetOffset = 0;
       let mobileSheetDrag = null;
 
+      function syncBrowserBottomInset() {
+        const vv = window.visualViewport;
+        let bottomInset = 0;
+        if (vv) {
+          bottomInset = Math.max(0, Math.round(window.innerHeight - (vv.height + vv.offsetTop)));
+          // Ignore on-screen keyboard insets; this offset is for browser chrome overlap.
+          if (bottomInset > 140) bottomInset = 0;
+        }
+        document.documentElement.style.setProperty("--browser-bottom-inset", `${bottomInset}px`);
+      }
+
       function getSelectLabel(selectEl) {
         return selectEl.options[selectEl.selectedIndex]?.textContent ?? "";
       }
@@ -1583,6 +1595,7 @@
       }
 
       function syncMobileModeClasses() {
+        syncBrowserBottomInset();
         const mobile = isMobileViewport();
         document.body.classList.toggle("mobile-mode", mobile);
         if (!mobile) {
@@ -1680,6 +1693,10 @@
       }
       window.addEventListener("resize", () => syncMobileModeClasses());
       window.addEventListener("orientationchange", () => syncMobileModeClasses());
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", syncMobileModeClasses);
+        window.visualViewport.addEventListener("scroll", syncMobileModeClasses);
+      }
 
       for (const button of $groupChoiceButtons) {
         button.addEventListener("click", () => {
