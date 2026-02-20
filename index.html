@@ -1091,7 +1091,7 @@
       crossorigin
       async
       data-callback="initMapKit"
-      data-libraries="map,annotations"
+      data-libraries="map,annotations,user-location"
       data-token=""
     ></script>
     <script>
@@ -2159,7 +2159,9 @@
 
         const map = new mapkit.Map("map", {
           showsCompass: mapkit.FeatureVisibility.Visible,
-          showsZoomControl: true
+          showsZoomControl: true,
+          showsUserLocation: true,
+          showsUserLocationControl: mapkit.FeatureVisibility.Visible
         });
 
         applySystemColorScheme(map);
