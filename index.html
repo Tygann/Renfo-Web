@@ -58,96 +58,6 @@
 
       #map { height: 100%; width: 100%; }
 
-      #iosAppBanner {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 35;
-        display: none;
-        background: color-mix(in srgb, var(--ios-browser-chrome) 94%, black 6%);
-        border-bottom: 1px solid color-mix(in srgb, var(--panel-border) 70%, rgba(255,255,255,0.08));
-        backdrop-filter: blur(14px) saturate(120%);
-        -webkit-backdrop-filter: blur(14px) saturate(120%);
-      }
-
-      #iosAppBannerInner {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: calc(env(safe-area-inset-top, 0px) + 8px) 14px 10px 14px;
-      }
-
-      #iosAppBannerIcon {
-        width: 34px;
-        height: 34px;
-        border-radius: 8px;
-        object-fit: cover;
-        flex: 0 0 auto;
-      }
-
-      #iosAppBannerText {
-        min-width: 0;
-        flex: 1;
-      }
-
-      #iosAppBannerTitle {
-        margin: 0;
-        font-size: 21px;
-        line-height: 1;
-        letter-spacing: -0.2px;
-        font-weight: 600;
-        color: rgba(255,255,255,0.96);
-      }
-
-      #iosAppBannerSubtitle {
-        margin: 4px 0 0 0;
-        font-size: 14px;
-        line-height: 1.1;
-        color: rgba(255,255,255,0.72);
-      }
-
-      #iosAppOpenBtn {
-        border: 0;
-        border-radius: 999px;
-        min-width: 86px;
-        height: 36px;
-        padding: 0 16px;
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 0.2px;
-        line-height: 1;
-        color: rgba(255,255,255,0.96);
-        background: #0a84ff;
-        flex: 0 0 auto;
-        cursor: pointer;
-      }
-
-      #iosAppOpenBtn:active {
-        filter: brightness(0.93);
-      }
-
-      body.ios-mobile::before,
-      body.ios-mobile::after {
-        content: "";
-        position: fixed;
-        left: 0;
-        right: 0;
-        z-index: 34;
-        pointer-events: none;
-        background: var(--ios-browser-chrome);
-      }
-
-      body.ios-mobile::before {
-        top: 0;
-        height: env(safe-area-inset-top, 0px);
-      }
-
-      body.ios-mobile::after {
-        bottom: 0;
-        height: env(safe-area-inset-bottom, 0px);
-      }
-
       /* Sidebar */
       #sidebar {
         position: absolute;
@@ -1001,15 +911,6 @@
 
       /* Mobile: sidebar becomes top sheet */
       @media (max-width: 640px) {
-        body.ios-mobile.ios-banner-visible #iosAppBanner {
-          display: block;
-        }
-
-        body.ios-mobile.ios-banner-visible #map {
-          margin-top: var(--ios-banner-height, 0px);
-          height: calc(100% - var(--ios-banner-height, 0px));
-        }
-
         #expandPill,
         #collapseBtn {
           display: none !important;
@@ -1133,6 +1034,24 @@
 
     <!-- MapKit JS -->
     <script src="/config.js"></script>
+    <script>
+      (() => {
+        const appId = String(window.RENFO_CONFIG?.IOS_SMART_BANNER_APP_ID || "").trim();
+        if (!appId) return;
+        const appArgument = String(window.RENFO_CONFIG?.IOS_SMART_BANNER_APP_ARGUMENT || "").trim();
+        const content = appArgument
+          ? `app-id=${appId}, app-argument=${appArgument}`
+          : `app-id=${appId}`;
+
+        let meta = document.querySelector('meta[name="apple-itunes-app"]');
+        if (!meta) {
+          meta = document.createElement("meta");
+          meta.name = "apple-itunes-app";
+          document.head.appendChild(meta);
+        }
+        meta.content = content;
+      })();
+    </script>
     <script
       src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js"
       crossorigin
@@ -1151,17 +1070,6 @@
   </head>
 
   <body>
-    <div id="iosAppBanner" hidden>
-      <div id="iosAppBannerInner">
-        <img id="iosAppBannerIcon" src="/apple-touch-icon.png" alt="" aria-hidden="true" />
-        <div id="iosAppBannerText">
-          <p id="iosAppBannerTitle">Renfo</p>
-          <p id="iosAppBannerSubtitle">Open in the Renfo app</p>
-        </div>
-        <button id="iosAppOpenBtn" type="button">OPEN</button>
-      </div>
-    </div>
-
     <button id="expandPill" type="button" aria-label="Expand sidebar">
       <span class="icon" aria-hidden="true">
         <!-- panel toggle icon -->
@@ -1413,12 +1321,6 @@
 
       const DEFAULT_FESTIVAL_LOGO = "/renfo-logo.png";
       const ASSETS_BASE_URL = String(window.RENFO_CONFIG?.ASSETS_BASE_URL || "https://assets.renfo.app").replace(/\/+$/, "");
-      const IOS_APP_BANNER_ENABLED = window.RENFO_CONFIG?.IOS_APP_BANNER_ENABLED !== false;
-      const IOS_APP_OPEN_URL = String(window.RENFO_CONFIG?.IOS_APP_OPEN_URL || "https://renfo.app").trim();
-      const IOS_APP_STORE_URL = String(window.RENFO_CONFIG?.IOS_APP_STORE_URL || "").trim();
-      const IOS_APP_NAME = String(window.RENFO_CONFIG?.IOS_APP_NAME || "Renfo").trim() || "Renfo";
-      const IOS_APP_SUBTITLE = String(window.RENFO_CONFIG?.IOS_APP_SUBTITLE || "Open in the Renfo app").trim() || "Open in the Renfo app";
-      const IOS_APP_ICON_URL = String(window.RENFO_CONFIG?.IOS_APP_ICON_URL || "/apple-touch-icon.png").trim() || "/apple-touch-icon.png";
 
       function sanitizeAssetPart(value) {
         return String(value ?? "")
@@ -1441,17 +1343,6 @@
           img.src = fallbackSrc;
         };
         img.src = primarySrc || fallbackSrc;
-      }
-
-      function isIOSDevice() {
-        const ua = navigator.userAgent || "";
-        const isiOS = /iP(hone|ad|od)/.test(ua);
-        const isTouchMac = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
-        return isiOS || isTouchMac;
-      }
-
-      function isLikelyDeepLink(url) {
-        return /^[a-z][a-z0-9+.-]*:/i.test(url) && !/^https?:/i.test(url);
       }
 
       function normalize(s) {
@@ -1494,11 +1385,6 @@
       // ---------- UI elements ----------
       const $search = document.getElementById("search");
       const $searchClearBtn = document.getElementById("searchClearBtn");
-      const $iosAppBanner = document.getElementById("iosAppBanner");
-      const $iosAppBannerIcon = document.getElementById("iosAppBannerIcon");
-      const $iosAppBannerTitle = document.getElementById("iosAppBannerTitle");
-      const $iosAppBannerSubtitle = document.getElementById("iosAppBannerSubtitle");
-      const $iosAppOpenBtn = document.getElementById("iosAppOpenBtn");
       const $list = document.getElementById("list");
       const $group = document.getElementById("groupSelect");
       const $sort = document.getElementById("sortSelect");
@@ -1545,27 +1431,6 @@
       let mobileSheetState = "peek";
       let mobileSheetOffset = 0;
       let mobileSheetDrag = null;
-
-      function syncIOSAppBanner() {
-        const shouldShow = IOS_APP_BANNER_ENABLED && isIOSDevice() && isMobileViewport() && !!IOS_APP_OPEN_URL;
-        document.body.classList.toggle("ios-mobile", isIOSDevice() && isMobileViewport());
-        document.body.classList.toggle("ios-banner-visible", shouldShow);
-        $iosAppBanner.hidden = !shouldShow;
-
-        if (!shouldShow) {
-          document.body.style.removeProperty("--ios-banner-height");
-          return;
-        }
-
-        $iosAppBannerTitle.textContent = IOS_APP_NAME;
-        $iosAppBannerSubtitle.textContent = IOS_APP_SUBTITLE;
-        setImageWithFallback($iosAppBannerIcon, IOS_APP_ICON_URL, "/apple-touch-icon.png");
-
-        requestAnimationFrame(() => {
-          const height = Math.round($iosAppBanner.getBoundingClientRect().height);
-          document.body.style.setProperty("--ios-banner-height", `${height}px`);
-        });
-      }
 
       function getSelectLabel(selectEl) {
         return selectEl.options[selectEl.selectedIndex]?.textContent ?? "";
@@ -1724,7 +1589,6 @@
           $sidebar.style.removeProperty("--mobile-list-offset");
           syncOptionsMenuDirection();
           positionOptionsMenu();
-          syncIOSAppBanner();
           return;
         }
         setMobileSheetState(mobileSheetState, { animate: false });
@@ -1732,7 +1596,6 @@
           syncOptionsMenuDirection();
           positionOptionsMenu();
         }
-        syncIOSAppBanner();
       }
 
       function syncMobileDetailSheetState(isOpen) {
@@ -1773,36 +1636,6 @@
         $search.value = "";
         $search.dispatchEvent(new Event("input", { bubbles: true }));
         $search.focus();
-      });
-      $iosAppOpenBtn.addEventListener("click", () => {
-        if (!IOS_APP_OPEN_URL) return;
-        const useFallback = isLikelyDeepLink(IOS_APP_OPEN_URL) && !!IOS_APP_STORE_URL;
-        if (!useFallback) {
-          window.location.href = IOS_APP_OPEN_URL;
-          return;
-        }
-
-        let fallbackTimer = null;
-        const clearFallback = () => {
-          if (fallbackTimer) {
-            clearTimeout(fallbackTimer);
-            fallbackTimer = null;
-          }
-          document.removeEventListener("visibilitychange", handleVisibilityChange);
-          window.removeEventListener("pagehide", clearFallback);
-        };
-        const handleVisibilityChange = () => {
-          if (document.hidden) clearFallback();
-        };
-
-        fallbackTimer = setTimeout(() => {
-          clearFallback();
-          window.location.href = IOS_APP_STORE_URL;
-        }, 1200);
-
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-        window.addEventListener("pagehide", clearFallback);
-        window.location.href = IOS_APP_OPEN_URL;
       });
       function handleMobileSheetPointerDown(event) {
         if (!isMobileViewport()) return;
