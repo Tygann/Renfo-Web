@@ -78,6 +78,42 @@
         height: auto;
       }
 
+      #siteMeta {
+        position: fixed;
+        right: 16px;
+        bottom: calc(12px + max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)));
+        z-index: 22;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--panel-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: var(--shadow);
+        font-size: 12px;
+        line-height: 1;
+      }
+
+      #siteMetaLinks {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      #siteMeta a {
+        color: var(--text);
+        text-decoration: none;
+        opacity: 0.8;
+      }
+
+      #siteMeta a:hover,
+      #siteMeta a:focus-visible {
+        opacity: 1;
+        text-decoration: underline;
+      }
+
       /* Sidebar */
       #sidebar {
         position: absolute;
@@ -1257,6 +1293,25 @@
           padding-bottom: calc(12px + max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)));
         }
 
+        #siteMeta {
+          left: auto;
+          right: 12px;
+          bottom: calc(max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)) + var(--mobile-sheet-peek-visible, 96px) + 10px);
+          justify-content: flex-start;
+          max-width: calc(100vw - 24px);
+          z-index: 26;
+          opacity: 0;
+          transform: translateY(6px);
+          pointer-events: none;
+          transition: opacity 160ms ease, transform 160ms ease;
+        }
+
+        body.mobile-mode.mobile-sheet-peek:not(.mobile-detail-open) #siteMeta {
+          opacity: 1;
+          transform: translateY(0);
+          pointer-events: auto;
+        }
+
         #detailSidebar {
           left: 0;
           right: 0;
@@ -1551,8 +1606,19 @@
     </div>
 
     <div id="map"></div>
+    <div id="siteMeta" aria-label="Site info">
+      <span>&copy; <span class="siteYear"></span> Renfo</span>
+      <nav id="siteMetaLinks" aria-label="Renfo social link">
+        <a href="https://x.com/RenfoApp" target="_blank" rel="noopener noreferrer">X</a>
+      </nav>
+    </div>
 
     <script type="module">
+      const currentYear = new Date().getFullYear();
+      document.querySelectorAll(".siteYear").forEach($el => {
+        $el.textContent = currentYear;
+      });
+
       // ---------- Helpers ----------
       function isMapLibraryLoaded() {
         const libs = window.mapkit?.loadedLibraries;
@@ -2026,6 +2092,7 @@
         const headerHeight = $sidebarHeader.getBoundingClientRect().height;
         const peekVisible = Math.max(96, headerHeight - 6);
         const maxOffset = Math.max(0, sidebarHeight - peekVisible);
+        document.documentElement.style.setProperty("--mobile-sheet-peek-visible", `${peekVisible}px`);
         return {
           full: 0,
           mid: Math.round(maxOffset * 0.44),
@@ -2048,6 +2115,11 @@
         }
       }
 
+      function syncMobileSheetMetaVisibility() {
+        const show = isMobileViewport() && mobileSheetState === "peek" && !document.body.classList.contains("mobile-detail-open");
+        document.body.classList.toggle("mobile-sheet-peek", show);
+      }
+
       function setMobileSheetState(nextState, options = {}) {
         if (!isMobileViewport()) return;
         const { animate = true } = options;
@@ -2055,6 +2127,7 @@
         const target = nextState === "full" ? full : nextState === "mid" ? mid : peek;
         mobileSheetState = nextState;
         applyMobileSheetOffset(target, { animate });
+        syncMobileSheetMetaVisibility();
       }
 
       function snapMobileSheetToNearest() {
@@ -2079,6 +2152,7 @@
         document.body.classList.toggle("mobile-mode", mobile);
         if (!mobile) {
           document.body.classList.remove("mobile-detail-open");
+          document.body.classList.remove("mobile-sheet-peek");
           $sidebar.style.removeProperty("--mobile-list-offset");
           syncOptionsMenuDirection();
           positionOptionsMenu();
@@ -2094,16 +2168,19 @@
       function syncMobileDetailSheetState(isOpen) {
         if (!isMobileViewport()) {
           document.body.classList.remove("mobile-detail-open");
+          document.body.classList.remove("mobile-sheet-peek");
           return;
         }
         if (isOpen) {
           document.body.classList.add("mobile-detail-open");
+          syncMobileSheetMetaVisibility();
           return;
         }
 
         // Bring list sheet back instantly when detail closes.
         $sidebar.style.transition = "none";
         document.body.classList.remove("mobile-detail-open");
+        syncMobileSheetMetaVisibility();
         requestAnimationFrame(() => {
           $sidebar.style.removeProperty("transition");
         });
@@ -2151,6 +2228,7 @@
           startY: event.clientY,
           startOffset: mobileSheetOffset
         };
+        document.body.classList.remove("mobile-sheet-peek");
         $sidebarHeader.setPointerCapture?.(event.pointerId);
         event.preventDefault();
       }
