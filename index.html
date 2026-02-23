@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Renfo" />
-    <title>Renfo Map</title>
+    <title>Renfo - Renaissance Festival Map</title>
 
     <!-- Favicon -->
     <link rel="icon" href="/favicon.ico" sizes="any">
@@ -533,6 +533,10 @@
         border-radius: 0;
         background: transparent;
         margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
         cursor: pointer;
         transition: background 140ms ease;
       }
@@ -550,12 +554,13 @@
         display: flex;
         align-items: center;
         gap: 12px;
+        flex: 1 1 auto;
         min-width: 0;
       }
 
       .rowLogo {
-        width: 24px;
-        height: 24px;
+        width: 34px;
+        height: 34px;
         border-radius: 999px;
         flex: 0 0 auto;
         object-fit: cover;
@@ -783,6 +788,18 @@
 
       #detailSocialCard {
         padding: 2px 0 0 0;
+      }
+
+      #detailLastUpdated {
+        margin: 0;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.25;
+        color: var(--subtext);
+      }
+
+      #detailLastUpdated[hidden] {
+        display: none !important;
       }
 
       #detailSocials {
@@ -1017,9 +1034,82 @@
         font-weight: 400;
         margin: 0;
         line-height: 1.2;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        min-width: 0;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        overflow-wrap: break-word;
+      }
+
+      .rowDaysUntil {
+        flex: 0 0 auto;
+        min-width: 36px;
+        text-align: center;
+        line-height: 1;
+        color: var(--text);
+      }
+
+      .rowDaysUntilValue {
+        display: block;
+        font-size: 16px;
+        font-weight: 650;
+        line-height: 1.05;
+        letter-spacing: -0.15px;
+      }
+
+      .rowDaysUntilLabel {
+        display: block;
+        margin-top: 2px;
+        font-size: 12px;
+        color: var(--subtext);
+      }
+
+      .rowStatusIndicator {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .rowStatusIndicator--active {
+        background: color-mix(in srgb, #30d158 28%, transparent);
+        color: #30d158;
+      }
+
+      .rowStatusIndicator--inactive {
+        background: color-mix(in srgb, var(--subtext) 28%, transparent);
+        color: color-mix(in srgb, var(--subtext) 84%, var(--text) 16%);
+      }
+
+      .rowStatusIndicator--discontinued {
+        background: color-mix(in srgb, #ff453a 28%, transparent);
+        color: #ff453a;
+      }
+
+      .rowStatusIndicatorIcon {
+        width: 13px;
+        height: 13px;
+        display: block;
+      }
+
+      .rowStatusIndicatorIcon svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 4.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .rowStatusIndicatorText {
+        font-size: 15px;
+        font-weight: 650;
+        line-height: 1;
       }
 
       /* Expand button (shown when sidebar is collapsed) */
@@ -1306,6 +1396,17 @@
             <button type="button" class="optionChoice" data-select="sort" data-value="name">Name</button>
             <button type="button" class="optionChoice" data-select="sort" data-value="startDate">Start Date</button>
           </div>
+
+          <div class="optionsChoices">
+            <button id="daysUntilToggleRow" class="optionsRow" type="button" aria-label="Toggle upcoming days in list">
+              <span id="daysUntilToggleIcon" class="optionsIcon" aria-hidden="true">
+                <i data-lucide="eye"></i>
+              </span>
+              <span class="optionsText">
+                <p id="daysUntilToggleTitle" class="optionsTitle">Hide Indicator</p>
+              </span>
+            </button>
+          </div>
         </div>
 
         <div id="searchWrap">
@@ -1444,6 +1545,8 @@
           <div id="detailSocials"></div>
         </section>
 
+        <p id="detailLastUpdated" hidden></p>
+
       </div>
     </div>
 
@@ -1506,14 +1609,17 @@
       async function loadFestivals() {
         const response = await fetch("./festivals.json", { cache: "no-store" });
         const data = await response.json();
+        const now = new Date();
 
         return (data ?? [])
           .filter(f => f.latitude != null && f.longitude != null)
           .map(f => {
-            const derivedStatus = getDerivedFestivalStatus(f);
+            const derivedStatus = getDerivedFestivalStatus(f, now);
+            const daysUntilStart = getDaysUntilFestivalStart(f, now, derivedStatus);
             return {
               ...f,
               status: derivedStatus,
+              daysUntilStart,
               lat: f.latitude,
               lng: f.longitude,
               subtitle: `${f.city ?? ""}${f.city && f.state ? ", " : ""}${f.state ?? ""}`.trim(),
@@ -1526,6 +1632,26 @@
 
       const DEFAULT_FESTIVAL_LOGO = "/renfo-logo.png";
       const ASSETS_BASE_URL = String(window.RENFO_CONFIG?.ASSETS_BASE_URL || "https://assets.renfo.app").replace(/\/+$/, "");
+      let showUpcomingDaysInList = false;
+      const SETTINGS_STORAGE_KEYS = {
+        group: "renfo.group",
+        sort: "renfo.sort",
+        showUpcomingDaysInList: "renfo.showUpcomingDaysInList"
+      };
+
+      function readStoredSetting(key) {
+        try {
+          return window.localStorage?.getItem(key) ?? null;
+        } catch (_) {
+          return null;
+        }
+      }
+
+      function writeStoredSetting(key, value) {
+        try {
+          window.localStorage?.setItem(key, String(value));
+        } catch (_) {}
+      }
 
       function sanitizeAssetPart(value) {
         return String(value ?? "")
@@ -1600,6 +1726,39 @@
         return null;
       }
 
+      function getDaysUntilFestivalStart(f, now = new Date(), status = null) {
+        const resolvedStatus = status ?? getDerivedFestivalStatus(f, now);
+        if (resolvedStatus !== "Upcoming") return null;
+
+        const start = parseDate(f?.dateBegin ?? f?.startDate);
+        if (!start) return null;
+
+        const today = startOfLocalDay(now);
+        const startDay = startOfLocalDay(start);
+        const diffMs = startDay.getTime() - today.getTime();
+        const dayMs = 24 * 60 * 60 * 1000;
+        if (diffMs < 0) return null;
+        return Math.floor(diffMs / dayMs);
+      }
+
+      function formatLastUpdated(value) {
+        if (!value) return null;
+        const updatedAt = new Date(String(value));
+        if (!Number.isFinite(updatedAt.getTime())) return null;
+
+        const datePart = updatedAt.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        });
+        const timePart = updatedAt.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true
+        });
+        return `Last Updated: ${datePart} at ${timePart}`;
+      }
+
       function compareByName(a, b) {
         return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" });
       }
@@ -1621,10 +1780,54 @@
         return "All";
       }
 
+      function getListIndicatorData(f) {
+        if (!showUpcomingDaysInList) return null;
+
+        const statusText = String(f?.status ?? "").trim().toLowerCase();
+        if (statusText === "upcoming") {
+          if (!Number.isInteger(f?.daysUntilStart) || f.daysUntilStart < 0) return null;
+          return { type: "days", daysUntilStart: f.daysUntilStart };
+        }
+
+        if (statusText === "active") {
+          return { type: "status", variant: "active", icon: "check", ariaLabel: "Status: Active" };
+        }
+
+        if (statusText === "inactive") {
+          return { type: "status", variant: "inactive", text: "?", ariaLabel: "Status: Inactive" };
+        }
+
+        if (statusText === "discontinued") {
+          return { type: "status", variant: "discontinued", icon: "x", ariaLabel: "Status: Discontinued" };
+        }
+
+        return null;
+      }
+
       function sortFestivals(items, sortMode) {
         const copy = [...items];
         copy.sort(sortMode === "startDate" ? compareByStartDate : compareByName);
         return copy;
+      }
+
+      function sortGroupKeys(groupKeys, groupMode) {
+        if (groupMode !== "status") {
+          return groupKeys.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+        }
+
+        const statusOrder = new Map([
+          ["active", 0],
+          ["upcoming", 1],
+          ["inactive", 2],
+          ["discontinued", 3]
+        ]);
+
+        return groupKeys.sort((a, b) => {
+          const rankA = statusOrder.get(normalize(a).trim()) ?? Number.MAX_SAFE_INTEGER;
+          const rankB = statusOrder.get(normalize(b).trim()) ?? Number.MAX_SAFE_INTEGER;
+          if (rankA !== rankB) return rankA - rankB;
+          return a.localeCompare(b, undefined, { sensitivity: "base" });
+        });
       }
 
       // ---------- UI elements ----------
@@ -1646,6 +1849,9 @@
       const $sortChoices = document.getElementById("sortChoices");
       const $groupSummary = document.getElementById("groupSummary");
       const $sortSummary = document.getElementById("sortSummary");
+      const $daysUntilToggleRow = document.getElementById("daysUntilToggleRow");
+      const $daysUntilToggleIcon = document.getElementById("daysUntilToggleIcon");
+      const $daysUntilToggleTitle = document.getElementById("daysUntilToggleTitle");
       const $groupChoiceButtons = Array.from(document.querySelectorAll('.optionChoice[data-select="group"]'));
       const $sortChoiceButtons = Array.from(document.querySelectorAll('.optionChoice[data-select="sort"]'));
       const $detailSidebar = document.getElementById("detailSidebar");
@@ -1660,6 +1866,7 @@
       const $detailMetaItems = Array.from($detailMetaRow.querySelectorAll(".detailMetaItem"));
       const $detailSocialCard = document.getElementById("detailSocialCard");
       const $detailSocials = document.getElementById("detailSocials");
+      const $detailLastUpdated = document.getElementById("detailLastUpdated");
       const $detailDescriptionCard = document.getElementById("detailDescriptionCard");
       const $detailDesc = document.getElementById("detailDesc");
       const $detailActionCall = document.getElementById("detailActionCall");
@@ -1704,6 +1911,9 @@
       function syncOptionsMenuState() {
         $groupSummary.textContent = getSelectLabel($group);
         $sortSummary.textContent = getSelectLabel($sort);
+        $daysUntilToggleTitle.textContent = showUpcomingDaysInList ? "Hide Indicator" : "Show Indicator";
+        $daysUntilToggleIcon.innerHTML = getLucideIconMarkup(showUpcomingDaysInList ? "eye-off" : "eye");
+        refreshLucideIcons();
 
         for (const button of $groupChoiceButtons) {
           button.classList.toggle("is-active", button.dataset.value === $group.value);
@@ -1788,6 +1998,23 @@
         if (selectEl.value === value) return;
         selectEl.value = value;
         selectEl.dispatchEvent(new Event("change"));
+      }
+
+      function applyStoredUiSettings() {
+        const storedGroup = readStoredSetting(SETTINGS_STORAGE_KEYS.group);
+        if (storedGroup && Array.from($group.options).some(option => option.value === storedGroup)) {
+          $group.value = storedGroup;
+        }
+
+        const storedSort = readStoredSetting(SETTINGS_STORAGE_KEYS.sort);
+        if (storedSort && Array.from($sort.options).some(option => option.value === storedSort)) {
+          $sort.value = storedSort;
+        }
+
+        const storedShowUpcomingDays = readStoredSetting(SETTINGS_STORAGE_KEYS.showUpcomingDaysInList);
+        if (storedShowUpcomingDays != null) {
+          showUpcomingDaysInList = storedShowUpcomingDays === "true";
+        }
       }
 
       function isMobileViewport() {
@@ -1963,16 +2190,14 @@
       for (const button of $groupChoiceButtons) {
         button.addEventListener("click", () => {
           setSelectValue($group, button.dataset.value);
-          syncOptionsMenuState();
-          setChoicesOpen("group", false);
+          closeOptionsMenu();
         });
       }
 
       for (const button of $sortChoiceButtons) {
         button.addEventListener("click", () => {
           setSelectValue($sort, button.dataset.value);
-          syncOptionsMenuState();
-          setChoicesOpen("sort", false);
+          closeOptionsMenu();
         });
       }
 
@@ -1989,7 +2214,7 @@
         const groupKeys =
           groupMode === "none"
             ? ["All"]
-            : Array.from(grouped.keys()).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+            : sortGroupKeys(Array.from(grouped.keys()), groupMode);
 
         for (const key of groupKeys) {
           const groupItems = grouped.get(key) ?? items;
@@ -2033,6 +2258,40 @@
             rowMain.append(logo, title);
             row.appendChild(rowMain);
 
+            const indicatorData = getListIndicatorData(f);
+            if (indicatorData?.type === "days") {
+              const daysWrap = document.createElement("div");
+              daysWrap.className = "rowDaysUntil";
+              const dayLabel = indicatorData.daysUntilStart === 1 ? "day" : "days";
+              daysWrap.setAttribute("aria-label", `${indicatorData.daysUntilStart} ${dayLabel} until start`);
+
+              const daysValue = document.createElement("span");
+              daysValue.className = "rowDaysUntilValue";
+              daysValue.textContent = String(indicatorData.daysUntilStart);
+
+              const daysLabel = document.createElement("span");
+              daysLabel.className = "rowDaysUntilLabel";
+              daysLabel.textContent = dayLabel;
+
+              daysWrap.append(daysValue, daysLabel);
+              row.appendChild(daysWrap);
+            } else if (indicatorData?.type === "status") {
+              const statusWrap = document.createElement("div");
+              statusWrap.className = `rowStatusIndicator rowStatusIndicator--${indicatorData.variant}`;
+              statusWrap.setAttribute("aria-label", indicatorData.ariaLabel);
+
+              if (indicatorData.icon) {
+                statusWrap.innerHTML = `<span class="rowStatusIndicatorIcon">${getLucideIconMarkup(indicatorData.icon)}</span>`;
+              } else {
+                const statusText = document.createElement("span");
+                statusText.className = "rowStatusIndicatorText";
+                statusText.textContent = indicatorData.text;
+                statusWrap.appendChild(statusText);
+              }
+
+              row.appendChild(statusWrap);
+            }
+
             row.addEventListener("click", () => onSelect(f));
             sectionGroup.appendChild(row);
           }
@@ -2041,6 +2300,8 @@
 
           if (groupMode === "none") break;
         }
+
+        refreshLucideIcons();
       }
 
       function formatDateRange(f) {
@@ -2282,6 +2543,8 @@
           $detailMetaStatusValue.textContent = "";
           $detailMetaStatusValue.classList.remove("is-active", "is-discontinued");
           $detailMetaEstablishedValue.textContent = "";
+          $detailLastUpdated.textContent = "";
+          $detailLastUpdated.hidden = true;
           for (const item of $detailMetaItems) {
             item.hidden = true;
           }
@@ -2352,6 +2615,15 @@
         } else {
           $detailDesc.textContent = "";
           $detailDescriptionCard.hidden = true;
+        }
+
+        const lastUpdatedText = formatLastUpdated(f.modified);
+        if (lastUpdatedText) {
+          $detailLastUpdated.textContent = lastUpdatedText;
+          $detailLastUpdated.hidden = false;
+        } else {
+          $detailLastUpdated.textContent = "";
+          $detailLastUpdated.hidden = true;
         }
 
         const telValue = String(f.phone ?? "").replace(/[^\d+]/g, "");
@@ -2448,6 +2720,7 @@
         applySystemColorScheme(map);
 
         const allFestivals = await loadFestivals();
+        applyStoredUiSettings();
 
         // Create annotations + lookup
         const annotations = allFestivals.map(makeMarker);
@@ -2587,11 +2860,22 @@
           rerender();
         });
         $group.addEventListener("change", () => {
+          writeStoredSetting(SETTINGS_STORAGE_KEYS.group, $group.value);
           syncOptionsMenuState();
+          closeOptionsMenu();
           rerender();
         });
         $sort.addEventListener("change", () => {
+          writeStoredSetting(SETTINGS_STORAGE_KEYS.sort, $sort.value);
           syncOptionsMenuState();
+          closeOptionsMenu();
+          rerender();
+        });
+        $daysUntilToggleRow.addEventListener("click", () => {
+          showUpcomingDaysInList = !showUpcomingDaysInList;
+          writeStoredSetting(SETTINGS_STORAGE_KEYS.showUpcomingDaysInList, showUpcomingDaysInList);
+          syncOptionsMenuState();
+          closeOptionsMenu();
           rerender();
         });
       }
