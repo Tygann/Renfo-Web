@@ -181,7 +181,7 @@
 
       .iconButton {
         border: 0;
-        background: color-mix(in srgb, var(--control-bg) 86%, rgba(18,18,22,0.22));
+        background: var(--detail-card-bg);
         color: var(--text);
         border-radius: 999px;
         padding: 0;
@@ -422,7 +422,7 @@
         padding: 12px 36px 12px 36px;
         font-size: 14px;
         outline: none;
-        background: color-mix(in srgb, var(--control-bg) 82%, rgba(18,18,22,0.18));
+        background: var(--detail-card-bg);
         color: var(--text);
       }
 
@@ -698,6 +698,27 @@
         stroke-linejoin: round;
       }
 
+      #detailActionCall .detailActionIcon svg {
+        fill: currentColor;
+      }
+
+      #detailActionDirections .detailActionIcon svg {
+        fill: currentColor;
+      }
+
+      #detailActionWebsite .detailActionIcon svg {
+        fill: none;
+        stroke: none;
+      }
+
+      #detailActionWebsite .detailActionIcon svg circle {
+        fill: currentColor;
+      }
+
+      #detailActionWebsite .detailActionIcon svg path {
+        fill: var(--ios-browser-chrome);
+      }
+
       .detailActionLabel {
         font-size: 12px;
         font-weight: 650;
@@ -782,25 +803,12 @@
         display: none !important;
       }
 
-      .detailEstablishedLaurel {
-        width: 30px;
-        height: 30px;
+      .detailEstablishedDash {
+        width: 56px;
+        height: 2px;
+        border-radius: 999px;
         display: inline-block;
-        color: color-mix(in srgb, var(--subtext) 88%, var(--text) 12%);
-      }
-
-      .detailEstablishedLaurel svg {
-        width: 100%;
-        height: 100%;
-        display: block;
-        fill: none;
-        stroke: currentColor;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-
-      .detailEstablishedLaurel.is-right {
-        transform: scaleX(-1);
+        background: color-mix(in srgb, var(--subtext) 88%, var(--text) 12%);
       }
 
       .detailInfoRow {
@@ -819,12 +827,23 @@
       }
 
       .detailInfoKey {
-        width: 92px;
+        width: 20px;
+        height: 20px;
         flex: 0 0 auto;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        color: var(--subtext);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text);
+      }
+
+      .detailInfoKey svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
 
       .detailInfoValue {
@@ -832,7 +851,53 @@
         font-weight: 400;
       }
 
-      #detailAddressCard {
+      #detailAddressCard,
+      #detailResourcesCard,
+      #detailDescriptionCard {
+        display: flex;
+        flex-direction: column;
+      }
+
+      #detailResourcesCard[hidden],
+      #detailDescriptionCard[hidden] {
+        display: none !important;
+      }
+
+      .detailSectionHeader {
+        padding: 10px 10px 8px 10px;
+      }
+
+      .detailAddressPanel {
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .detailAddressText {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .detailAddressBtn {
+        width: 40px;
+        height: 40px;
+        flex: 0 0 auto;
+        align-self: center;
+        text-decoration: none;
+      }
+
+      .detailAddressBtn .icon {
+        width: 20px;
+        height: 20px;
+      }
+
+      .detailAddressBtn.is-disabled {
+        opacity: 0.4;
+        pointer-events: none;
+      }
+
+      .detailDescriptionPanel {
         padding: 10px 12px;
       }
 
@@ -846,11 +911,7 @@
         margin-top: 6px;
       }
 
-      #detailDescriptionCard {
-        padding: 10px 12px;
-      }
-
-      #detailResourcesCard {
+      .detailResourcesPanel {
         padding: 0;
       }
 
@@ -920,26 +981,8 @@
         display: block;
       }
 
-      .detailSectionTitle {
-        margin: 0;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        color: var(--subtext);
-      }
-
-      #detailAddressCard .detailSectionTitle,
-      #detailDescriptionCard .detailSectionTitle {
-        margin-bottom: 8px;
-      }
-
-      #detailResourcesCard .detailSectionTitle {
-        margin: 0;
-        padding: 10px 12px 8px 12px;
-      }
-
       #detailDesc {
-        margin: 8px 0 0 0;
+        margin: 0;
         font-size: 12px;
         line-height: 1.4;
         color: var(--text);
@@ -963,7 +1006,7 @@
         z-index: 21;
         display: none;
         border: 0;
-        background: color-mix(in srgb, var(--control-bg) 86%, rgba(18,18,22,0.22));
+        background: var(--detail-card-bg);
         color: var(--text);
         border-radius: 999px;
         width: 44px;
@@ -1146,10 +1189,16 @@
 
     <!-- MapKit JS -->
     <script src="/config.js"></script>
+    <script>
+      window.__mapKitReady = false;
+      window.initMapKit = function initMapKit() {
+        window.__mapKitReady = true;
+      };
+    </script>
     <script
       src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js"
       crossorigin
-      async
+      defer
       data-callback="initMapKit"
       data-libraries="map,annotations,user-location"
       data-token=""
@@ -1167,7 +1216,7 @@
   <body>
     <button id="expandPill" type="button" aria-label="Expand sidebar">
       <span class="icon" aria-hidden="true">
-        <i data-lucide="columns"></i>
+        <i data-lucide="panel-left-open"></i>
       </span>
     </button>
 
@@ -1192,7 +1241,7 @@
 
             <button id="collapseBtn" class="iconButton" aria-label="Collapse sidebar" title="Collapse">
               <span class="icon" aria-hidden="true">
-                <i data-lucide="columns"></i>
+                <i data-lucide="panel-left-close"></i>
               </span>
             </button>
           </div>
@@ -1201,7 +1250,7 @@
         <div id="optionsMenu" hidden>
           <button id="groupMenuRow" class="optionsRow" type="button" aria-label="Group by setting" aria-expanded="false">
             <span class="optionsIcon" aria-hidden="true">
-              <i data-lucide="list"></i>
+              <i data-lucide="layout-list"></i>
             </span>
             <span class="optionsText">
               <p class="optionsTitle">Group By</p>
@@ -1301,7 +1350,7 @@
           </a>
           <a id="detailActionWebsite" class="detailAction" href="#" aria-label="Open website">
             <span class="detailActionIcon" aria-hidden="true">
-              <i data-lucide="globe"></i>
+              <i data-lucide="compass"></i>
             </span>
             <span class="detailActionLabel">Website</span>
           </a>
@@ -1309,48 +1358,62 @@
 
         <section id="detailInfoCard" class="detailCard">
           <div class="detailInfoRow">
-            <span class="detailInfoKey">Dates</span>
+            <span class="detailInfoKey" aria-hidden="true" title="Dates">
+              <i data-lucide="calendar-days"></i>
+            </span>
             <span id="detailDateValue" class="detailInfoValue"></span>
           </div>
           <div class="detailInfoRow">
-            <span class="detailInfoKey">Hours</span>
+            <span class="detailInfoKey" aria-hidden="true" title="Hours">
+              <i data-lucide="clock-3"></i>
+            </span>
             <span id="detailTimeValue" class="detailInfoValue"></span>
           </div>
           <div id="detailAttendanceRow" class="detailInfoRow">
-            <span class="detailInfoKey">Attendance</span>
+            <span class="detailInfoKey" aria-hidden="true" title="Attendance">
+              <i data-lucide="users"></i>
+            </span>
             <span id="detailAttendanceValue" class="detailInfoValue"></span>
           </div>
         </section>
 
-        <section id="detailAddressCard" class="detailCard">
-          <p class="detailSectionTitle">Address</p>
-          <p id="detailAddressLine1" class="detailAddressLine"></p>
-          <p id="detailAddressLine2" class="detailAddressLine"></p>
-          <p id="detailAddressLine3" class="detailAddressLine"></p>
-        </section>
+        <div id="detailAddressCard">
+          <section class="detailCard detailAddressPanel">
+            <div class="detailAddressText">
+              <p id="detailAddressLine1" class="detailAddressLine"></p>
+              <p id="detailAddressLine2" class="detailAddressLine"></p>
+              <p id="detailAddressLine3" class="detailAddressLine"></p>
+            </div>
+            <a id="detailAddressOpenBtn" class="iconButton detailAddressBtn" href="#" aria-label="Open address in maps" title="Open in maps">
+              <span class="icon" aria-hidden="true">
+                <i data-lucide="corner-up-right"></i>
+              </span>
+            </a>
+          </section>
+        </div>
 
-        <section id="detailResourcesCard" class="detailCard" hidden>
-          <p class="detailSectionTitle">Resources</p>
-          <div id="detailResources"></div>
-        </section>
+        <div id="detailResourcesCard" hidden>
+          <p class="sectionHeader detailSectionHeader">Resources</p>
+          <section class="detailCard detailResourcesPanel">
+            <div id="detailResources"></div>
+          </section>
+        </div>
 
-        <section id="detailDescriptionCard" class="detailCard">
-          <p class="detailSectionTitle">About</p>
-          <p id="detailDesc"></p>
-        </section>
+        <div id="detailDescriptionCard">
+          <p class="sectionHeader detailSectionHeader">About</p>
+          <section class="detailCard detailDescriptionPanel">
+            <p id="detailDesc"></p>
+          </section>
+        </div>
 
         <section id="detailSocialCard" hidden>
           <div id="detailSocials"></div>
         </section>
 
         <section id="detailEstablishedRow" hidden>
-          <span class="detailEstablishedLaurel" aria-hidden="true">
-            <i data-lucide="leaf"></i>
-          </span>
+          <span class="detailEstablishedDash" aria-hidden="true"></span>
           <span id="detailEstablishedValue"></span>
-          <span class="detailEstablishedLaurel is-right" aria-hidden="true">
-            <i data-lucide="leaf"></i>
-          </span>
+          <span class="detailEstablishedDash" aria-hidden="true"></span>
         </section>
       </div>
     </div>
@@ -1359,11 +1422,56 @@
 
     <script type="module">
       // ---------- Helpers ----------
+      function isMapLibraryLoaded() {
+        const libs = window.mapkit?.loadedLibraries;
+        if (!libs) return false;
+        if (Array.isArray(libs)) return libs.includes("map");
+        if (typeof libs.has === "function") return libs.has("map");
+        return Boolean(libs.map || libs["map"]);
+      }
+
       async function waitForMapKit() {
-        if (!window.mapkit || !window.mapkit.loadedLibraries) {
-          await new Promise(resolve => (window.initMapKit = resolve));
-          delete window.initMapKit;
+        if (!window.__mapKitReady) {
+          await new Promise(resolve => {
+            const previousInit = window.initMapKit;
+            window.initMapKit = () => {
+              try {
+                previousInit?.();
+              } catch (_) {}
+              resolve();
+            };
+          });
         }
+
+        if (isMapLibraryLoaded()) return;
+
+        await new Promise((resolve, reject) => {
+          const timeoutMs = 8000;
+          const startMs = Date.now();
+          const timer = setInterval(() => {
+            if (isMapLibraryLoaded()) {
+              clearInterval(timer);
+              resolve();
+              return;
+            }
+
+            if (Date.now() - startMs >= timeoutMs) {
+              clearInterval(timer);
+              reject(new Error("MapKit map library did not load."));
+            }
+          }, 50);
+        });
+      }
+
+      function getMapFeatureVisibility(visibilityName) {
+        return window.mapkit?.FeatureVisibility?.[visibilityName];
+      }
+
+      function getMapPadding(top, right, bottom, left) {
+        if (typeof window.mapkit?.Padding === "function") {
+          return new window.mapkit.Padding(top, right, bottom, left);
+        }
+        return { top, right, bottom, left };
       }
 
       async function loadFestivals() {
@@ -1486,6 +1594,7 @@
       const $detailAddressLine1 = document.getElementById("detailAddressLine1");
       const $detailAddressLine2 = document.getElementById("detailAddressLine2");
       const $detailAddressLine3 = document.getElementById("detailAddressLine3");
+      const $detailAddressOpenBtn = document.getElementById("detailAddressOpenBtn");
       const $detailResourcesCard = document.getElementById("detailResourcesCard");
       const $detailResources = document.getElementById("detailResources");
       const $detailEstablishedRow = document.getElementById("detailEstablishedRow");
@@ -1914,11 +2023,11 @@
 
       function buildDirectionsHref(f) {
         if (f.lat != null && f.lng != null) {
-          return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${f.lat},${f.lng}`)}`;
+          return `https://maps.apple.com/?ll=${encodeURIComponent(`${f.lat},${f.lng}`)}&q=${encodeURIComponent(f.name ?? "Festival")}`;
         }
 
         const q = [f.address, f.city, f.state, f.zip].filter(Boolean).join(", ");
-        return q ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}` : null;
+        return q ? `https://maps.apple.com/?q=${encodeURIComponent(q)}` : null;
       }
 
       function setDetailActionLink(el, href, openInNewTab = false) {
@@ -2006,13 +2115,13 @@
 
       function getResourceIconSvg(type) {
         if (type === "camp") {
-          return getLucideIconMarkup("home");
+          return getLucideIconMarkup("tent");
         }
         if (type === "tickets") {
           return getLucideIconMarkup("ticket");
         }
         if (type === "lostFound") {
-          return getLucideIconMarkup("shield");
+          return getLucideIconMarkup("shield-question-mark");
         }
         return getLucideIconMarkup("map");
       }
@@ -2154,6 +2263,7 @@
 
         setDetailActionLink($detailActionCall, callHref, false);
         setDetailActionLink($detailActionDirections, directionsHref, true);
+        setDetailActionLink($detailAddressOpenBtn, directionsHref, true);
         setDetailActionLink($detailActionWebsite, websiteHref, true);
 
         const socials = getSocialEntries(f);
@@ -2188,11 +2298,17 @@
       // ---------- Map ----------
       function makeMarker(f) {
         const coord = new mapkit.Coordinate(f.lat, f.lng);
+        const crownGlyphImage = {
+          1: "/crown.png",
+          2: "/crown.png",
+          3: "/crown.png"
+        };
 
         const marker = new mapkit.MarkerAnnotation(coord, {
           title: f.name,
-          subtitle: f.subtitle
-          // No glyphText => default marker style
+          subtitle: f.subtitle,
+          glyphImage: crownGlyphImage,
+          selectedGlyphImage: crownGlyphImage,
         });
 
         // clustering
@@ -2226,9 +2342,9 @@
         await waitForMapKit();
 
         const map = new mapkit.Map("map", {
-          showsCompass: mapkit.FeatureVisibility.Visible,
+          showsCompass: getMapFeatureVisibility("Visible"),
           showsZoomControl: true,
-          showsUserLocationControl: mapkit.FeatureVisibility.Visible
+          showsUserLocationControl: getMapFeatureVisibility("Visible")
         });
 
         applySystemColorScheme(map);
@@ -2243,7 +2359,7 @@
         }
 
         map.addAnnotations(annotations);
-        map.showItems(annotations, { animate: false, padding: new mapkit.Padding(60,60,60,60) });
+        map.showItems(annotations, { animate: false, padding: getMapPadding(60, 60, 60, 60) });
 
         let selectedAnnotation = null;
         let pendingMapSelectionTimer = null;
@@ -2290,7 +2406,7 @@
           if (zoomToFestival) {
             map.showItems([ann], {
               animate: true,
-              padding: new mapkit.Padding(90, 90, 90, 90)
+              padding: getMapPadding(90, 90, 90, 90)
             });
           }
 
@@ -2320,7 +2436,7 @@
           if (!a) return;
 
           if (Array.isArray(a.memberAnnotations) && a.memberAnnotations.length > 1) {
-            map.showItems(a.memberAnnotations, { animate: true, padding: new mapkit.Padding(60,60,60,60) });
+            map.showItems(a.memberAnnotations, { animate: true, padding: getMapPadding(60, 60, 60, 60) });
             map.deselectAnnotation(a);
             return;
           }
