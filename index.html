@@ -2746,6 +2746,8 @@
       // ---------- Map ----------
       function makeMarker(f) {
         const coord = new mapkit.Coordinate(f.lat, f.lng);
+        const statusText = String(f?.status ?? "").trim().toLowerCase();
+        const isActiveFestival = statusText === "active";
         const crownGlyphImage = {
           1: "/crown.png",
           2: "/crown.png",
@@ -2757,6 +2759,12 @@
           subtitle: f.subtitle,
           glyphImage: crownGlyphImage,
           selectedGlyphImage: crownGlyphImage,
+          ...(isActiveFestival
+            ? {
+                color: "#34c759",
+                selectedColor: "#34c759"
+              }
+            : {})
         });
 
         // clustering
