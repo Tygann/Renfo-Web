@@ -60,7 +60,7 @@
         "description": "The moment you step through the gates of the Alabama Medieval Fantasy Festival and into the Mythical Kingdom of Dragon Croft, the technological, digital addicted, 21st Century life as you know it starts to vanish into the cool wooded landscape and your transition to the year 815, begins.",
         "established": 2016,
         "abbreviation": "ALMFF",
-        "discontinued": false,
+        "discontinued": true,
         "lostAndFound": ""
     },
     {
@@ -1884,7 +1884,7 @@
         "description": null,
         "established": 2022,
         "abbreviation": "SETXRF",
-        "discontinued": false,
+        "discontinued": true,
         "lostAndFound": null
     },
     {

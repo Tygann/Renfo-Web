@@ -631,18 +631,6 @@
         object-fit: cover;
       }
 
-      #detailStatus {
-        margin: 10px auto 0 auto;
-        font-size: 11px;
-        line-height: 1;
-        display: inline-block;
-        padding: 5px 9px;
-        border-radius: 999px;
-        border: 0;
-        background: var(--control-bg);
-        color: var(--subtext);
-      }
-
       #detailTitle {
         margin: 10px 0 0 0;
         font-size: 24px;
@@ -658,7 +646,7 @@
 
       .detailAction {
         border: 0;
-        background: var(--detail-action-bg);
+        background: var(--detail-card-bg);
         border-radius: 16px;
         padding: 5px 8px;
         text-decoration: none;
@@ -725,6 +713,67 @@
         line-height: 1;
       }
 
+      #detailMetaRow {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+        align-items: stretch;
+        margin: 0;
+        border-top: 1px solid var(--row-sep);
+        border-bottom: 1px solid var(--row-sep);
+        border-radius: 0;
+        background: transparent;
+      }
+
+      #detailMetaRow[hidden] {
+        display: none !important;
+      }
+
+      .detailMetaItem {
+        padding: 10px 14px 11px 14px;
+        min-width: 0;
+      }
+
+      .detailMetaItem:not([hidden]) + .detailMetaItem:not([hidden]) {
+        position: relative;
+      }
+
+      .detailMetaItem:not([hidden]) + .detailMetaItem:not([hidden])::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 8px;
+        bottom: 8px;
+        width: 1px;
+        background: var(--row-sep);
+      }
+
+      .detailMetaLabel {
+        margin: 0;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        font-weight: 700;
+        line-height: 1.15;
+        color: var(--subtext);
+      }
+
+      .detailMetaValue {
+        margin: 6px 0 0 0;
+        font-size: 16px;
+        line-height: 1.05;
+        font-weight: 650;
+        letter-spacing: -0.15px;
+        color: var(--text);
+      }
+
+      .detailMetaValue.is-active {
+        color: #30d158;
+      }
+
+      .detailMetaValue.is-discontinued {
+        color: #ff453a;
+      }
+
       .detailCard {
         border: 0;
         border-radius: 20px;
@@ -753,7 +802,7 @@
         text-decoration: none;
         color: var(--text);
         border: 0;
-        background: transparent;
+        background: var(--detail-card-bg);
         border-radius: 999px;
         padding: 0;
         backdrop-filter: blur(8px);
@@ -784,31 +833,6 @@
         stroke: currentColor;
         stroke-linecap: round;
         stroke-linejoin: round;
-      }
-
-      #detailEstablishedRow {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        margin: 0 auto;
-        color: var(--subtext);
-        font-size: 18px;
-        font-weight: 650;
-        letter-spacing: 0.1px;
-        line-height: 1;
-      }
-
-      #detailEstablishedRow[hidden] {
-        display: none !important;
-      }
-
-      .detailEstablishedDash {
-        width: 56px;
-        height: 2px;
-        border-radius: 999px;
-        display: inline-block;
-        background: color-mix(in srgb, var(--subtext) 88%, var(--text) 12%);
       }
 
       .detailInfoRow {
@@ -1331,7 +1355,6 @@
           <div id="detailHeroLogoWrap">
             <img id="detailHeroLogo" src="/renfo-logo.png" alt="" aria-hidden="true" />
           </div>
-          <p id="detailStatus" hidden></p>
           <p id="detailTitle"></p>
         </section>
 
@@ -1354,6 +1377,17 @@
             </span>
             <span class="detailActionLabel">Website</span>
           </a>
+        </section>
+
+        <section id="detailMetaRow" class="detailCard">
+          <div id="detailMetaStatusItem" class="detailMetaItem">
+            <p class="detailMetaLabel">Status</p>
+            <p id="detailMetaStatusValue" class="detailMetaValue"></p>
+          </div>
+          <div id="detailMetaEstablishedItem" class="detailMetaItem">
+            <p class="detailMetaLabel">Established</p>
+            <p id="detailMetaEstablishedValue" class="detailMetaValue"></p>
+          </div>
         </section>
 
         <section id="detailInfoCard" class="detailCard">
@@ -1410,11 +1444,6 @@
           <div id="detailSocials"></div>
         </section>
 
-        <section id="detailEstablishedRow" hidden>
-          <span class="detailEstablishedDash" aria-hidden="true"></span>
-          <span id="detailEstablishedValue"></span>
-          <span class="detailEstablishedDash" aria-hidden="true"></span>
-        </section>
       </div>
     </div>
 
@@ -1480,15 +1509,19 @@
 
         return (data ?? [])
           .filter(f => f.latitude != null && f.longitude != null)
-          .map(f => ({
-            ...f,
-            lat: f.latitude,
-            lng: f.longitude,
-            subtitle: `${f.city ?? ""}${f.city && f.state ? ", " : ""}${f.state ?? ""}`.trim(),
-            logoAssetUrl: getFestivalAssetUrl(f, "logo"),
-            mapAssetUrl: getFestivalAssetUrl(f, "map"),
-            campAssetUrl: getFestivalAssetUrl(f, "camp")
-          }));
+          .map(f => {
+            const derivedStatus = getDerivedFestivalStatus(f);
+            return {
+              ...f,
+              status: derivedStatus,
+              lat: f.latitude,
+              lng: f.longitude,
+              subtitle: `${f.city ?? ""}${f.city && f.state ? ", " : ""}${f.state ?? ""}`.trim(),
+              logoAssetUrl: getFestivalAssetUrl(f, "logo"),
+              mapAssetUrl: getFestivalAssetUrl(f, "map"),
+              campAssetUrl: getFestivalAssetUrl(f, "camp")
+            };
+          });
       }
 
       const DEFAULT_FESTIVAL_LOGO = "/renfo-logo.png";
@@ -1523,8 +1556,48 @@
 
       function parseDate(value) {
         if (!value) return null;
-        const d = new Date(value);
+        const raw = String(value).trim();
+        const dateOnlyMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (dateOnlyMatch) {
+          const year = Number(dateOnlyMatch[1]);
+          const monthIndex = Number(dateOnlyMatch[2]) - 1;
+          const day = Number(dateOnlyMatch[3]);
+          const d = new Date(year, monthIndex, day);
+          return Number.isFinite(d.getTime()) ? d : null;
+        }
+
+        const d = new Date(raw);
         return Number.isFinite(d.getTime()) ? d : null;
+      }
+
+      function startOfLocalDay(date) {
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      }
+
+      function getDerivedFestivalStatus(f, now = new Date()) {
+        if (f?.discontinued === true) return "Discontinued";
+
+        const start = parseDate(f?.dateBegin ?? f?.startDate);
+        const end = parseDate(f?.dateEnd ?? f?.endDate);
+        const today = startOfLocalDay(now);
+        const startDay = start ? startOfLocalDay(start) : null;
+        const endDay = end ? startOfLocalDay(end) : null;
+
+        if (startDay && endDay) {
+          if (today < startDay) return "Upcoming";
+          if (today > endDay) return "Inactive";
+          return "Active";
+        }
+
+        if (startDay) {
+          return today < startDay ? "Upcoming" : "Active";
+        }
+
+        if (endDay) {
+          return today > endDay ? "Inactive" : "Active";
+        }
+
+        return null;
       }
 
       function compareByName(a, b) {
@@ -1579,7 +1652,12 @@
       const $detailCloseBtn = document.getElementById("detailCloseBtn");
       const $detailHeroLogo = document.getElementById("detailHeroLogo");
       const $detailTitle = document.getElementById("detailTitle");
-      const $detailStatus = document.getElementById("detailStatus");
+      const $detailMetaRow = document.getElementById("detailMetaRow");
+      const $detailMetaStatusItem = document.getElementById("detailMetaStatusItem");
+      const $detailMetaEstablishedItem = document.getElementById("detailMetaEstablishedItem");
+      const $detailMetaStatusValue = document.getElementById("detailMetaStatusValue");
+      const $detailMetaEstablishedValue = document.getElementById("detailMetaEstablishedValue");
+      const $detailMetaItems = Array.from($detailMetaRow.querySelectorAll(".detailMetaItem"));
       const $detailSocialCard = document.getElementById("detailSocialCard");
       const $detailSocials = document.getElementById("detailSocials");
       const $detailDescriptionCard = document.getElementById("detailDescriptionCard");
@@ -1597,8 +1675,6 @@
       const $detailAddressOpenBtn = document.getElementById("detailAddressOpenBtn");
       const $detailResourcesCard = document.getElementById("detailResourcesCard");
       const $detailResources = document.getElementById("detailResources");
-      const $detailEstablishedRow = document.getElementById("detailEstablishedRow");
-      const $detailEstablishedValue = document.getElementById("detailEstablishedValue");
       let selectedFestivalId = null;
       let detailRenderVersion = 0;
       const resourceAssetExistsCache = new Map();
@@ -2203,8 +2279,13 @@
         if (!f) {
           $detailResources.innerHTML = "";
           $detailResourcesCard.hidden = true;
-          $detailEstablishedValue.textContent = "";
-          $detailEstablishedRow.hidden = true;
+          $detailMetaStatusValue.textContent = "";
+          $detailMetaStatusValue.classList.remove("is-active", "is-discontinued");
+          $detailMetaEstablishedValue.textContent = "";
+          for (const item of $detailMetaItems) {
+            item.hidden = true;
+          }
+          $detailMetaRow.hidden = true;
           $detailSidebar.hidden = true;
           syncMobileDetailSheetState(false);
           return;
@@ -2213,21 +2294,38 @@
         setImageWithFallback($detailHeroLogo, f.logoAssetUrl);
         $detailTitle.textContent = f.name ?? "Untitled";
 
-        if (f.status) {
-          $detailStatus.textContent = f.status;
-          $detailStatus.hidden = false;
+        const establishedYear = getEstablishedYear(f.established);
+        const statusText = String(f.status ?? "").trim();
+        $detailMetaStatusValue.classList.remove("is-active", "is-discontinued");
+
+        if (statusText) {
+          $detailMetaStatusValue.textContent = statusText;
+          $detailMetaStatusItem.hidden = false;
+          const normalizedStatus = statusText.toLowerCase();
+          if (normalizedStatus === "active") {
+            $detailMetaStatusValue.classList.add("is-active");
+          } else if (normalizedStatus === "discontinued") {
+            $detailMetaStatusValue.classList.add("is-discontinued");
+          }
         } else {
-          $detailStatus.hidden = true;
+          $detailMetaStatusValue.textContent = "";
+          $detailMetaStatusItem.hidden = true;
         }
 
-        const establishedYear = getEstablishedYear(f.established);
         if (establishedYear) {
-          $detailEstablishedValue.textContent = `Est. ${establishedYear}`;
-          $detailEstablishedRow.hidden = false;
+          $detailMetaEstablishedValue.textContent = String(establishedYear);
+          $detailMetaEstablishedItem.hidden = false;
         } else {
-          $detailEstablishedValue.textContent = "";
-          $detailEstablishedRow.hidden = true;
+          $detailMetaEstablishedValue.textContent = "";
+          $detailMetaEstablishedItem.hidden = true;
         }
+
+        for (const item of $detailMetaItems) {
+          const valueEl = item.querySelector(".detailMetaValue");
+          if (!valueEl) continue;
+          item.hidden = !String(valueEl.textContent ?? "").trim();
+        }
+        $detailMetaRow.hidden = $detailMetaItems.every(item => item.hidden);
 
         const dateRange = formatDateRange(f);
         $detailDateValue.textContent = dateRange;
