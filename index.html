@@ -80,7 +80,7 @@
 
       #siteMeta {
         position: fixed;
-        right: 64px;
+        right: 132px;
         bottom: calc(12px + max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)));
         z-index: 22;
         display: flex;
@@ -2861,7 +2861,7 @@
         const map = new mapkit.Map("map", {
           showsCompass: getMapFeatureVisibility("Visible"),
           showsZoomControl: true,
-          showsUserLocationControl: getMapFeatureVisibility("Visible")
+          showsUserLocationControl: true
         });
         const defaultShowsMapTypeControl = map.showsMapTypeControl;
         const defaultShowsUserLocationControl = map.showsUserLocationControl;
@@ -2887,9 +2887,8 @@
 
         syncMapChromeForViewport = () => {
           const isMobile = isMobileViewport();
-          const hidden = getMapFeatureVisibility("Hidden");
-          const visible = getMapFeatureVisibility("Visible");
-          const adaptive = getMapFeatureVisibility("Adaptive");
+          const restoreMapTypeControl = defaultShowsMapTypeControl !== false;
+          const restoreUserLocationControl = defaultShowsUserLocationControl !== false;
 
           if ($mobileMapControls) {
             $mobileMapControls.hidden = !isMobile;
@@ -2897,13 +2896,24 @@
 
           try {
             if (isMobile) {
-              map.showsMapTypeControl = hidden ?? false;
-              map.showsUserLocationControl = hidden ?? false;
+              map.showsMapTypeControl = false;
+              map.showsUserLocationControl = false;
             } else {
-              map.showsMapTypeControl = defaultShowsMapTypeControl ?? adaptive ?? visible ?? map.showsMapTypeControl;
-              map.showsUserLocationControl = defaultShowsUserLocationControl ?? visible ?? map.showsUserLocationControl;
+              map.showsMapTypeControl = restoreMapTypeControl;
+              map.showsUserLocationControl = restoreUserLocationControl;
             }
           } catch (_) {}
+
+          // Controls can be re-added during internal relayout; enforce the mobile hide once more.
+          if (isMobile) {
+            setTimeout(() => {
+              if (!isMobileViewport()) return;
+              try {
+                map.showsMapTypeControl = false;
+                map.showsUserLocationControl = false;
+              } catch (_) {}
+            }, 120);
+          }
 
           syncMobileMapButtonState();
         };
