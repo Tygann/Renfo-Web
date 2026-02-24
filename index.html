@@ -80,7 +80,7 @@
 
       #siteMeta {
         position: fixed;
-        right: 16px;
+        right: 64px;
         bottom: calc(12px + max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)));
         z-index: 22;
         display: flex;
@@ -112,6 +112,52 @@
       #siteMeta a:focus-visible {
         opacity: 1;
         text-decoration: underline;
+      }
+
+      #mobileMapControls {
+        position: fixed;
+        top: calc(10px + env(safe-area-inset-top, 0px));
+        right: 10px;
+        z-index: 24;
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .mobileMapControlBtn {
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 14px;
+        background: var(--control-bg);
+        color: var(--text);
+        box-shadow: var(--shadow);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        cursor: pointer;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: box-shadow 150ms ease, transform 120ms ease;
+      }
+
+      .mobileMapControlBtn:hover,
+      .mobileMapControlBtn:focus-visible {
+        box-shadow: var(--shadow), inset 0 0 0 999px var(--row-hover);
+      }
+
+      .mobileMapControlBtn:active {
+        transform: translateY(0.5px);
+      }
+
+      .mobileMapControlBtn svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .mobileMapControlBtn.is-active {
+        box-shadow: var(--shadow), inset 0 0 0 999px rgba(52, 199, 89, 0.18);
       }
 
       /* Sidebar */
@@ -1180,6 +1226,10 @@
 
       /* Mobile: sidebar becomes top sheet */
       @media (max-width: 640px) {
+        #mobileMapControls {
+          display: flex;
+        }
+
         #expandPill,
         #collapseBtn {
           display: none !important;
@@ -1606,11 +1656,16 @@
     </div>
 
     <div id="map"></div>
+    <div id="mobileMapControls" aria-label="Map controls" hidden>
+      <button id="mobileMapStyleBtn" class="mobileMapControlBtn" type="button" aria-label="Change map style" title="Map style">
+        <i data-lucide="layers-3" aria-hidden="true"></i>
+      </button>
+      <button id="mobileUserLocationBtn" class="mobileMapControlBtn" type="button" aria-label="Toggle user location tracking" title="Location">
+        <i data-lucide="locate" aria-hidden="true"></i>
+      </button>
+    </div>
     <div id="siteMeta" aria-label="Site info">
       <span>&copy; <span class="siteYear"></span> Renfo</span>
-      <nav id="siteMetaLinks" aria-label="Renfo social link">
-        <a href="https://x.com/RenfoApp" target="_blank" rel="noopener noreferrer">X</a>
-      </nav>
     </div>
 
     <script type="module">
@@ -1948,6 +2003,9 @@
       const $detailAddressOpenBtn = document.getElementById("detailAddressOpenBtn");
       const $detailResourcesCard = document.getElementById("detailResourcesCard");
       const $detailResources = document.getElementById("detailResources");
+      const $mobileMapControls = document.getElementById("mobileMapControls");
+      const $mobileMapStyleBtn = document.getElementById("mobileMapStyleBtn");
+      const $mobileUserLocationBtn = document.getElementById("mobileUserLocationBtn");
       let selectedFestivalId = null;
       let detailRenderVersion = 0;
       const resourceAssetExistsCache = new Map();
@@ -1955,6 +2013,7 @@
       let mobileSheetState = "peek";
       let mobileSheetOffset = 0;
       let mobileSheetDrag = null;
+      let syncMapChromeForViewport = null;
 
       function syncBrowserBottomInset() {
         const vv = window.visualViewport;
@@ -2156,6 +2215,7 @@
           $sidebar.style.removeProperty("--mobile-list-offset");
           syncOptionsMenuDirection();
           positionOptionsMenu();
+          if (typeof syncMapChromeForViewport === "function") syncMapChromeForViewport();
           return;
         }
         setMobileSheetState(mobileSheetState, { animate: false });
@@ -2163,6 +2223,7 @@
           syncOptionsMenuDirection();
           positionOptionsMenu();
         }
+        if (typeof syncMapChromeForViewport === "function") syncMapChromeForViewport();
       }
 
       function syncMobileDetailSheetState(isOpen) {
@@ -2802,6 +2863,69 @@
           showsZoomControl: true,
           showsUserLocationControl: getMapFeatureVisibility("Visible")
         });
+        const defaultShowsMapTypeControl = map.showsMapTypeControl;
+        const defaultShowsUserLocationControl = map.showsUserLocationControl;
+
+        const mapTypes = mapkit?.Map?.MapTypes ?? null;
+        const mapTypeSequence = [
+          mapTypes?.Standard,
+          mapTypes?.Hybrid,
+          mapTypes?.Satellite
+        ].filter(Boolean);
+
+        function getNextMapType(current) {
+          if (!mapTypeSequence.length) return null;
+          const currentIndex = mapTypeSequence.indexOf(current);
+          const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % mapTypeSequence.length : 0;
+          return mapTypeSequence[nextIndex];
+        }
+
+        function syncMobileMapButtonState() {
+          if (!$mobileUserLocationBtn) return;
+          $mobileUserLocationBtn.classList.toggle("is-active", !!map.tracksUserLocation);
+        }
+
+        syncMapChromeForViewport = () => {
+          const isMobile = isMobileViewport();
+          const hidden = getMapFeatureVisibility("Hidden");
+          const visible = getMapFeatureVisibility("Visible");
+          const adaptive = getMapFeatureVisibility("Adaptive");
+
+          if ($mobileMapControls) {
+            $mobileMapControls.hidden = !isMobile;
+          }
+
+          try {
+            if (isMobile) {
+              map.showsMapTypeControl = hidden ?? false;
+              map.showsUserLocationControl = hidden ?? false;
+            } else {
+              map.showsMapTypeControl = defaultShowsMapTypeControl ?? adaptive ?? visible ?? map.showsMapTypeControl;
+              map.showsUserLocationControl = defaultShowsUserLocationControl ?? visible ?? map.showsUserLocationControl;
+            }
+          } catch (_) {}
+
+          syncMobileMapButtonState();
+        };
+
+        if ($mobileMapStyleBtn) {
+          $mobileMapStyleBtn.addEventListener("click", () => {
+            const nextType = getNextMapType(map.mapType);
+            if (nextType) map.mapType = nextType;
+          });
+        }
+
+        if ($mobileUserLocationBtn) {
+          $mobileUserLocationBtn.addEventListener("click", () => {
+            try {
+              map.showsUserLocation = true;
+              map.tracksUserLocation = !map.tracksUserLocation;
+            } catch (_) {}
+            syncMobileMapButtonState();
+          });
+        }
+
+        syncMapChromeForViewport();
 
         applySystemColorScheme(map);
 
