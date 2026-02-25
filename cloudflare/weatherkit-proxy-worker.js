@@ -23,6 +23,24 @@ function getAllowedOrigins(env) {
   return single ? [single] : [];
 }
 
+function escapeRegexLiteral(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function isOriginAllowed(origin, allowedOrigins) {
+  for (const allowed of allowedOrigins) {
+    if (allowed === "*") return true;
+    if (!allowed.includes("*")) {
+      if (origin === allowed) return true;
+      continue;
+    }
+
+    const regex = new RegExp(`^${escapeRegexLiteral(allowed).replace(/\\\*/g, ".*")}$`);
+    if (regex.test(origin)) return true;
+  }
+  return false;
+}
+
 function toBase64Url(bytes) {
   let binary = "";
   for (let i = 0; i < bytes.length; i += 1) {
@@ -220,11 +238,10 @@ function buildCorsHeaders(request, env) {
   const origin = request.headers.get("Origin");
   if (!origin) return {};
 
-  const allowAll = allowedOrigins.includes("*");
-  if (!allowAll && !allowedOrigins.includes(origin)) return null;
+  if (!isOriginAllowed(origin, allowedOrigins)) return null;
 
   return {
-    "Access-Control-Allow-Origin": allowAll ? "*" : origin,
+    "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Max-Age": "86400",
