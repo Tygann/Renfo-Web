@@ -1,0 +1,38 @@
+:root {
+  --ios-browser-chrome: #f2f2f7;
+  --browser-bottom-inset: 0px;
+  --panel-bg: rgba(255, 255, 255, 0.88);
+  --panel-border: rgba(0, 0, 0, 0.08);
+  --shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  --text: rgba(0,0,0,0.92);
+  --subtext: rgba(0,0,0,0.60);
+  --row-sep: rgba(0,0,0,0.06);
+  --row-hover: rgba(0,0,0,0.04);
+  --control-bg: rgba(255,255,255,0.85);
+  --list-card-bg: rgba(255,255,255,0.42);
+  --list-card-border: rgba(0,0,0,0.10);
+  --list-header: rgba(0,0,0,0.60);
+  --detail-action-bg: rgba(255,255,255,0.42);
+  --detail-action-bg-hover: rgba(255,255,255,0.56);
+  --detail-card-bg: rgba(255,255,255,0.42);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ios-browser-chrome: #1c1c1e;
+    --panel-bg: rgba(30, 30, 30, 0.78);
+    --panel-border: rgba(255, 255, 255, 0.10);
+    --shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    --text: rgba(255,255,255,0.92);
+    --subtext: rgba(255,255,255,0.60);
+    --row-sep: rgba(255,255,255,0.08);
+    --row-hover: rgba(255,255,255,0.06);
+    --control-bg: rgba(40,40,40,0.85);
+    --list-card-bg: rgba(255,255,255,0.10);
+    --list-card-border: rgba(255,255,255,0.14);
+    --list-header: rgba(255,255,255,0.74);
+    --detail-action-bg: rgba(255,255,255,0.10);
+    --detail-action-bg-hover: rgba(255,255,255,0.16);
+    --detail-card-bg: rgba(255,255,255,0.10);
+  }
+}
