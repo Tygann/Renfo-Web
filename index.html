@@ -1110,13 +1110,7 @@
         margin: 0;
         font-size: 14px;
         font-weight: 500;
-        line-height: 1.1;
-      }
-
-      .detailWeatherCondition {
-        margin: 2px 0 0 0;
-        font-size: 12px;
-        color: var(--subtext);
+        line-height: 1.2;
       }
 
       .detailWeatherTemps {
@@ -2729,18 +2723,17 @@
         return d.toLocaleDateString(undefined, { weekday: "short" });
       }
 
-      function formatWeatherConditionLabel(code) {
-        const raw = String(code ?? "").trim();
-        if (!raw) return "Unavailable";
-        return raw
-          .replace(/([a-z])([A-Z])/g, "$1 $2")
-          .replace(/_/g, " ")
-          .trim();
+      function isMetricWeatherUnits(units) {
+        const normalized = String(units ?? "").trim().toLowerCase();
+        return normalized === "m" || normalized === "metric" || normalized === "si" || normalized === "c";
       }
 
-      function formatWeatherTemperature(value) {
+      function formatWeatherTemperature(value, units = null) {
         if (typeof value !== "number" || !Number.isFinite(value)) return "--";
-        return `${Math.round(value)}\u00B0`;
+        const normalizedValue = isMetricWeatherUnits(units)
+          ? (value * 9) / 5 + 32
+          : value;
+        return `${Math.round(normalizedValue)}\u00B0`;
       }
 
       function getWeatherConditionIconName(conditionCode, isDaylight = true) {
@@ -2759,16 +2752,16 @@
 
       function mapWeatherPayload(payload) {
         const current = payload?.currentWeather ?? null;
+        const forecastUnits = payload?.forecastDaily?.metadata?.units ?? payload?.currentWeather?.metadata?.units ?? null;
         const dailyRows = Array.isArray(payload?.forecastDaily?.days)
           ? payload.forecastDaily.days.slice(0, 5).map((day, index) => {
               const daytimeForecast = day?.daytimeForecast ?? {};
               const overnightForecast = day?.overnightForecast ?? {};
               return {
                 dayLabel: formatWeatherDayLabel(day?.forecastStart, index),
-                condition: formatWeatherConditionLabel(daytimeForecast.conditionCode ?? overnightForecast.conditionCode),
                 icon: getWeatherConditionIconName(daytimeForecast.conditionCode ?? overnightForecast.conditionCode, true),
-                tempHigh: formatWeatherTemperature(day?.temperatureMax),
-                tempLow: formatWeatherTemperature(day?.temperatureMin)
+                tempHigh: formatWeatherTemperature(day?.temperatureMax, forecastUnits),
+                tempLow: formatWeatherTemperature(day?.temperatureMin, forecastUnits)
               };
             })
           : [];
@@ -2867,19 +2860,7 @@
         try {
           const weather = await getWeatherForecast(f.lat, f.lng);
           if (renderVersion !== detailRenderVersion) return;
-
-          const hasCurrentCondition = String(weather?.current?.conditionCode ?? "").trim().length > 0;
-          const currentTemp = formatWeatherTemperature(weather?.current?.temperature);
-          if (hasCurrentCondition || currentTemp !== "--") {
-            const currentCondition = formatWeatherConditionLabel(weather?.current?.conditionCode);
-            if (currentTemp !== "--") {
-              renderWeatherStatus(`${currentCondition}, ${currentTemp}`);
-            } else {
-              renderWeatherStatus(currentCondition);
-            }
-          } else {
-            renderWeatherStatus("5-day forecast");
-          }
+          renderWeatherStatus("");
 
           if (!Array.isArray(weather?.days) || weather.days.length === 0) {
             if (!$detailWeatherStatus.textContent) {
@@ -2904,12 +2885,7 @@
             const dayLabel = document.createElement("p");
             dayLabel.className = "detailWeatherDay";
             dayLabel.textContent = day.dayLabel;
-
-            const condition = document.createElement("p");
-            condition.className = "detailWeatherCondition";
-            condition.textContent = day.condition;
-
-            main.append(dayLabel, condition);
+            main.append(dayLabel);
 
             const temps = document.createElement("p");
             temps.className = "detailWeatherTemps";

@@ -6,16 +6,12 @@
   "workers_dev": false,
   "routes": [
     {
-      "pattern": "renfo.app/api/weather*",
-      "zone_name": "renfo.app"
-    },
-    {
       "pattern": "www.renfo.app/api/weather*",
       "zone_name": "renfo.app"
     }
   ],
   "vars": {
-    "ALLOWED_ORIGINS": "https://renfo.app,https://www.renfo.app",
+    "ALLOWED_ORIGINS": "https://www.renfo.app",
     "WEATHERKIT_TOKEN_TTL_SECONDS": "1800"
   }
 }
