@@ -1,0 +1,5 @@
+AuthKey_*.p8
+*.p8
+.env
+.wrangler/
+.dev.vars

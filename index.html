@@ -119,32 +119,52 @@
         top: calc(10px + env(safe-area-inset-top, 0px));
         right: 10px;
         z-index: 24;
-        display: none;
+        display: flex;
         flex-direction: column;
-        gap: 8px;
+        align-items: flex-end;
+        gap: 0;
+        border-radius: 12px;
+        overflow: hidden;
+        background: color-mix(in srgb, var(--control-bg) 82%, transparent);
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+        backdrop-filter: blur(18px) saturate(1.2);
+        -webkit-backdrop-filter: blur(18px) saturate(1.2);
       }
 
       .mobileMapControlBtn {
         width: 44px;
         height: 44px;
         border: 0;
-        border-radius: 14px;
-        background: var(--control-bg);
-        color: var(--text);
-        box-shadow: var(--shadow);
+        border-radius: 0;
+        background: transparent;
+        color: color-mix(in srgb, var(--text) 70%, transparent);
+        box-shadow: none;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         padding: 0;
         cursor: pointer;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        transition: box-shadow 150ms ease, transform 120ms ease;
+        transition: box-shadow 150ms ease, transform 120ms ease, background-color 120ms ease;
+      }
+
+      #mobileMapStyleBtn {
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+
+      #mobileUserLocationBtn {
+        margin-top: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
       }
 
       .mobileMapControlBtn:hover,
       .mobileMapControlBtn:focus-visible {
-        box-shadow: var(--shadow), inset 0 0 0 999px var(--row-hover);
+        box-shadow: inset 0 0 0 999px color-mix(in srgb, var(--row-hover) 88%, transparent);
       }
 
       .mobileMapControlBtn:active {
@@ -154,10 +174,6 @@
       .mobileMapControlBtn svg {
         width: 22px;
         height: 22px;
-      }
-
-      .mobileMapControlBtn.is-active {
-        box-shadow: var(--shadow), inset 0 0 0 999px rgba(52, 199, 89, 0.18);
       }
 
       /* Sidebar */
@@ -975,12 +991,14 @@
       }
 
       #detailAddressCard,
+      #detailWeatherCard,
       #detailResourcesCard,
       #detailDescriptionCard {
         display: flex;
         flex-direction: column;
       }
 
+      #detailWeatherCard[hidden],
       #detailResourcesCard[hidden],
       #detailDescriptionCard[hidden] {
         display: none !important;
@@ -1032,6 +1050,91 @@
 
       .detailAddressLine + .detailAddressLine {
         margin-top: 6px;
+      }
+
+      .detailWeatherPanel {
+        padding: 0;
+      }
+
+      #detailWeatherStatus {
+        margin: 0;
+        padding: 10px 12px;
+        font-size: 13px;
+        color: var(--subtext);
+      }
+
+      #detailWeatherRows {
+        border: 0;
+        border-radius: 0;
+        overflow: hidden;
+        background: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+
+      .detailWeatherRow {
+        padding: 10px 12px;
+        display: grid;
+        grid-template-columns: 20px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .detailWeatherRow + .detailWeatherRow {
+        border-top: 1px solid var(--row-sep);
+      }
+
+      .detailWeatherIcon {
+        width: 18px;
+        height: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .detailWeatherIcon svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .detailWeatherMain {
+        min-width: 0;
+      }
+
+      .detailWeatherDay {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.1;
+      }
+
+      .detailWeatherCondition {
+        margin: 2px 0 0 0;
+        font-size: 12px;
+        color: var(--subtext);
+      }
+
+      .detailWeatherTemps {
+        font-size: 14px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .detailWeatherAttribution {
+        margin: 0;
+        padding: 10px 12px;
+        border-top: 1px solid var(--row-sep);
+        font-size: 11px;
+        color: var(--subtext);
+      }
+
+      .detailWeatherAttribution a {
+        color: inherit;
       }
 
       .detailResourcesPanel {
@@ -1226,10 +1329,6 @@
 
       /* Mobile: sidebar becomes top sheet */
       @media (max-width: 640px) {
-        #mobileMapControls {
-          display: flex;
-        }
-
         #expandPill,
         #collapseBtn {
           display: none !important;
@@ -1617,6 +1716,18 @@
           </div>
         </section>
 
+        <div id="detailWeatherCard" hidden>
+          <p class="sectionHeader detailSectionHeader">Forecast</p>
+          <section class="detailCard detailWeatherPanel">
+            <p id="detailWeatherStatus"></p>
+            <div id="detailWeatherRows"></div>
+            <p class="detailWeatherAttribution">
+              Weather data by Apple Weather.
+              <a href="https://weatherkit.apple.com/legal-attribution.html" target="_blank" rel="noopener noreferrer">Data sources</a>
+            </p>
+          </section>
+        </div>
+
         <div id="detailAddressCard">
           <section class="detailCard detailAddressPanel">
             <div class="detailAddressText">
@@ -1657,11 +1768,11 @@
 
     <div id="map"></div>
     <div id="mobileMapControls" aria-label="Map controls" hidden>
-      <button id="mobileMapStyleBtn" class="mobileMapControlBtn" type="button" aria-label="Change map style" title="Map style">
-        <i data-lucide="layers-3" aria-hidden="true"></i>
+      <button id="mobileMapStyleBtn" class="mobileMapControlBtn" type="button" aria-label="Toggle standard and hybrid map style" title="Map style">
+        <i data-lucide="map" aria-hidden="true"></i>
       </button>
       <button id="mobileUserLocationBtn" class="mobileMapControlBtn" type="button" aria-label="Toggle user location tracking" title="Location">
-        <i data-lucide="locate" aria-hidden="true"></i>
+        <i data-lucide="navigation" aria-hidden="true"></i>
       </button>
     </div>
     <div id="siteMeta" aria-label="Site info">
@@ -1997,6 +2108,9 @@
       const $detailTimeValue = document.getElementById("detailTimeValue");
       const $detailAttendanceRow = document.getElementById("detailAttendanceRow");
       const $detailAttendanceValue = document.getElementById("detailAttendanceValue");
+      const $detailWeatherCard = document.getElementById("detailWeatherCard");
+      const $detailWeatherStatus = document.getElementById("detailWeatherStatus");
+      const $detailWeatherRows = document.getElementById("detailWeatherRows");
       const $detailAddressLine1 = document.getElementById("detailAddressLine1");
       const $detailAddressLine2 = document.getElementById("detailAddressLine2");
       const $detailAddressLine3 = document.getElementById("detailAddressLine3");
@@ -2009,6 +2123,7 @@
       let selectedFestivalId = null;
       let detailRenderVersion = 0;
       const resourceAssetExistsCache = new Map();
+      const weatherForecastCache = new Map();
       const mobileMedia = window.matchMedia("(max-width: 640px)");
       let mobileSheetState = "peek";
       let mobileSheetOffset = 0;
@@ -2589,6 +2704,248 @@
           .filter(Boolean);
       }
 
+      function getWeatherKitToken() {
+        const weatherToken = String(window.RENFO_CONFIG?.WEATHERKIT_TOKEN ?? "").trim();
+        if (weatherToken) return weatherToken;
+        const mapToken = String(window.RENFO_CONFIG?.MAPKIT_TOKEN ?? "").trim();
+        return mapToken || null;
+      }
+
+      function getWeatherApiBaseUrl() {
+        return String(window.RENFO_CONFIG?.WEATHER_API_URL ?? "").trim();
+      }
+
+      function getWeatherCacheKey(lat, lng) {
+        return `${Number(lat).toFixed(4)},${Number(lng).toFixed(4)}`;
+      }
+
+      function formatWeatherDayLabel(dateValue, index) {
+        const d = new Date(String(dateValue));
+        if (!Number.isFinite(d.getTime())) {
+          return index === 0 ? "Today" : `Day ${index + 1}`;
+        }
+        if (index === 0) return "Today";
+        if (index === 1) return "Tomorrow";
+        return d.toLocaleDateString(undefined, { weekday: "short" });
+      }
+
+      function formatWeatherConditionLabel(code) {
+        const raw = String(code ?? "").trim();
+        if (!raw) return "Unavailable";
+        return raw
+          .replace(/([a-z])([A-Z])/g, "$1 $2")
+          .replace(/_/g, " ")
+          .trim();
+      }
+
+      function formatWeatherTemperature(value) {
+        if (typeof value !== "number" || !Number.isFinite(value)) return "--";
+        return `${Math.round(value)}\u00B0`;
+      }
+
+      function getWeatherConditionIconName(conditionCode, isDaylight = true) {
+        const code = String(conditionCode ?? "").toLowerCase();
+        if (!code) return "cloud";
+        if (/(thunder|storm|tropicalstorm|hurricane)/.test(code)) return "cloud-lightning";
+        if (/(snow|sleet|flurries|blizzard|hail|frigid|freezing)/.test(code)) return "snowflake";
+        if (/(rain|drizzle|showers)/.test(code)) return "cloud-rain";
+        if (/(wind|breezy|blowingdust)/.test(code)) return "wind";
+        if (/(fog|haze|smoke|dust)/.test(code)) return "cloud-fog";
+        if (/(clear|sunny)/.test(code)) return isDaylight ? "sun" : "moon";
+        if (/(mostlyclear|partlycloudy)/.test(code)) return isDaylight ? "cloud-sun" : "cloud-moon";
+        if (/(cloudy|overcast)/.test(code)) return "cloud";
+        return "cloud";
+      }
+
+      function mapWeatherPayload(payload) {
+        const current = payload?.currentWeather ?? null;
+        const dailyRows = Array.isArray(payload?.forecastDaily?.days)
+          ? payload.forecastDaily.days.slice(0, 5).map((day, index) => {
+              const daytimeForecast = day?.daytimeForecast ?? {};
+              const overnightForecast = day?.overnightForecast ?? {};
+              return {
+                dayLabel: formatWeatherDayLabel(day?.forecastStart, index),
+                condition: formatWeatherConditionLabel(daytimeForecast.conditionCode ?? overnightForecast.conditionCode),
+                icon: getWeatherConditionIconName(daytimeForecast.conditionCode ?? overnightForecast.conditionCode, true),
+                tempHigh: formatWeatherTemperature(day?.temperatureMax),
+                tempLow: formatWeatherTemperature(day?.temperatureMin)
+              };
+            })
+          : [];
+
+        return {
+          current,
+          days: dailyRows
+        };
+      }
+
+      function buildWeatherProxyUrl(baseUrl, lat, lng) {
+        const url = new URL(baseUrl, window.location.href);
+        url.searchParams.set("lat", String(lat));
+        url.searchParams.set("lng", String(lng));
+        return url.toString();
+      }
+
+      async function fetchWeatherForecast(lat, lng) {
+        const proxyBaseUrl = getWeatherApiBaseUrl();
+        if (proxyBaseUrl) {
+          const proxyResponse = await fetch(buildWeatherProxyUrl(proxyBaseUrl, lat, lng), {
+            cache: "no-store"
+          });
+
+          if (!proxyResponse.ok) {
+            const proxyError = new Error(`Weather API request failed with status ${proxyResponse.status}.`);
+            proxyError.code = "http_error";
+            proxyError.status = proxyResponse.status;
+            proxyError.source = "proxy";
+            throw proxyError;
+          }
+
+          const proxyPayload = await proxyResponse.json();
+          return mapWeatherPayload(proxyPayload);
+        }
+
+        const token = getWeatherKitToken();
+        if (!token) {
+          const missingTokenError = new Error("Missing WeatherKit configuration.");
+          missingTokenError.code = "missing_token";
+          throw missingTokenError;
+        }
+
+        const path = `${encodeURIComponent(String(lat))}/${encodeURIComponent(String(lng))}`;
+        const url = `https://weatherkit.apple.com/api/v1/weather/en/${path}?dataSets=currentWeather,forecastDaily&timezone=auto&countryCode=US`;
+
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          const err = new Error(`WeatherKit request failed with status ${response.status}.`);
+          err.code = "http_error";
+          err.status = response.status;
+          err.source = "weatherkit_direct";
+          throw err;
+        }
+
+        const payload = await response.json();
+        return mapWeatherPayload(payload);
+      }
+
+      async function getWeatherForecast(lat, lng) {
+        const key = getWeatherCacheKey(lat, lng);
+        if (weatherForecastCache.has(key)) return weatherForecastCache.get(key);
+
+        const promise = fetchWeatherForecast(lat, lng).catch(err => {
+          weatherForecastCache.delete(key);
+          throw err;
+        });
+        weatherForecastCache.set(key, promise);
+        return promise;
+      }
+
+      function renderWeatherStatus(message) {
+        const text = String(message ?? "").trim();
+        $detailWeatherStatus.textContent = text;
+        $detailWeatherStatus.hidden = !text;
+      }
+
+      async function renderDetailWeather(f, renderVersion) {
+        $detailWeatherRows.innerHTML = "";
+
+        if (!f || f.lat == null || f.lng == null) {
+          renderWeatherStatus("");
+          $detailWeatherCard.hidden = true;
+          return;
+        }
+
+        $detailWeatherCard.hidden = false;
+        renderWeatherStatus("Loading forecast...");
+
+        try {
+          const weather = await getWeatherForecast(f.lat, f.lng);
+          if (renderVersion !== detailRenderVersion) return;
+
+          const hasCurrentCondition = String(weather?.current?.conditionCode ?? "").trim().length > 0;
+          const currentTemp = formatWeatherTemperature(weather?.current?.temperature);
+          if (hasCurrentCondition || currentTemp !== "--") {
+            const currentCondition = formatWeatherConditionLabel(weather?.current?.conditionCode);
+            if (currentTemp !== "--") {
+              renderWeatherStatus(`${currentCondition}, ${currentTemp}`);
+            } else {
+              renderWeatherStatus(currentCondition);
+            }
+          } else {
+            renderWeatherStatus("5-day forecast");
+          }
+
+          if (!Array.isArray(weather?.days) || weather.days.length === 0) {
+            if (!$detailWeatherStatus.textContent) {
+              renderWeatherStatus("Forecast unavailable.");
+            }
+            return;
+          }
+
+          $detailWeatherRows.innerHTML = "";
+          for (const day of weather.days) {
+            const row = document.createElement("div");
+            row.className = "detailWeatherRow";
+
+            const icon = document.createElement("span");
+            icon.className = "detailWeatherIcon";
+            icon.setAttribute("aria-hidden", "true");
+            icon.innerHTML = getLucideIconMarkup(day.icon);
+
+            const main = document.createElement("div");
+            main.className = "detailWeatherMain";
+
+            const dayLabel = document.createElement("p");
+            dayLabel.className = "detailWeatherDay";
+            dayLabel.textContent = day.dayLabel;
+
+            const condition = document.createElement("p");
+            condition.className = "detailWeatherCondition";
+            condition.textContent = day.condition;
+
+            main.append(dayLabel, condition);
+
+            const temps = document.createElement("p");
+            temps.className = "detailWeatherTemps";
+            temps.textContent = `${day.tempHigh} / ${day.tempLow}`;
+
+            row.append(icon, main, temps);
+            $detailWeatherRows.appendChild(row);
+          }
+          refreshLucideIcons();
+        } catch (error) {
+          if (renderVersion !== detailRenderVersion) return;
+
+          $detailWeatherRows.innerHTML = "";
+          if (error?.code === "missing_token") {
+            renderWeatherStatus("Weather unavailable. Set WEATHER_API_URL (recommended) or WEATHERKIT_TOKEN in config.js.");
+            return;
+          }
+
+          if (error?.status === 401 || error?.status === 403) {
+            if (error?.source === "proxy") {
+              renderWeatherStatus("Weather unavailable. Weather proxy is not authorized with WeatherKit.");
+            } else {
+              renderWeatherStatus("Weather unavailable. WeatherKit token is not authorized for this origin.");
+            }
+            return;
+          }
+
+          if (error?.status === 429) {
+            renderWeatherStatus("Weather unavailable right now due to rate limits.");
+            return;
+          }
+
+          renderWeatherStatus("Weather unavailable right now.");
+        }
+      }
+
       function getResourceIconSvg(type) {
         if (type === "camp") {
           return getLucideIconMarkup("tent");
@@ -2677,6 +3034,10 @@
       function updateDetailPanel(f) {
         const renderVersion = ++detailRenderVersion;
         if (!f) {
+          $detailWeatherRows.innerHTML = "";
+          $detailWeatherStatus.textContent = "";
+          $detailWeatherStatus.hidden = true;
+          $detailWeatherCard.hidden = true;
           $detailResources.innerHTML = "";
           $detailResourcesCard.hidden = true;
           $detailMetaStatusValue.textContent = "";
@@ -2741,6 +3102,11 @@
           $detailAttendanceRow.hidden = true;
         }
 
+        $detailWeatherRows.innerHTML = "";
+        $detailWeatherStatus.textContent = "";
+        $detailWeatherStatus.hidden = true;
+        $detailWeatherCard.hidden = true;
+
         const cityState = [f.city, f.state].filter(Boolean).join(", ");
         const line2 = [cityState, f.zip].filter(Boolean).join(" ").trim();
         $detailAddressLine1.textContent = f.address || "Address unavailable";
@@ -2799,6 +3165,7 @@
 
         $detailResources.innerHTML = "";
         $detailResourcesCard.hidden = true;
+        renderDetailWeather(f, renderVersion);
         renderDetailResources(f, renderVersion);
         $detailSidebar.hidden = false;
         syncMobileDetailSheetState(true);
@@ -2861,67 +3228,80 @@
         const map = new mapkit.Map("map", {
           showsCompass: getMapFeatureVisibility("Visible"),
           showsZoomControl: true,
-          showsUserLocationControl: true
+          showsUserLocationControl: false
         });
-        const defaultShowsMapTypeControl = map.showsMapTypeControl;
-        const defaultShowsUserLocationControl = map.showsUserLocationControl;
 
         const mapTypes = mapkit?.Map?.MapTypes ?? null;
-        const mapTypeSequence = [
-          mapTypes?.Standard,
-          mapTypes?.Hybrid,
-          mapTypes?.Satellite
-        ].filter(Boolean);
+        const mapTypeByStyle = {
+          standard: mapTypes?.Standard ?? "standard",
+          hybrid: mapTypes?.Hybrid ?? "hybrid",
+          satellite: mapTypes?.Satellite ?? "satellite"
+        };
 
-        function getNextMapType(current) {
-          if (!mapTypeSequence.length) return null;
-          const currentIndex = mapTypeSequence.indexOf(current);
-          const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % mapTypeSequence.length : 0;
-          return mapTypeSequence[nextIndex];
+        function getMapStyleForType(type) {
+          if (type === mapTypeByStyle.hybrid || normalize(type) === "hybrid") return "hybrid";
+          if (type === mapTypeByStyle.satellite || normalize(type) === "satellite") return "satellite";
+          return "standard";
+        }
+
+        function syncMobileMapStyleButtonState() {
+          if (!$mobileMapStyleBtn) return;
+          const currentStyle = getMapStyleForType(map.mapType);
+          const iconName = currentStyle === "hybrid" ? "layers-3" : "map";
+          $mobileMapStyleBtn.classList.remove("is-active");
+          $mobileMapStyleBtn.innerHTML = getLucideIconMarkup(iconName);
+          refreshLucideIcons();
+        }
+
+        function getMobileLocationIconMarkup(isTracking) {
+          if (isTracking) {
+            return `
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path fill="currentColor" d="M3 11.5 21 3l-8.5 18-1.95-7.55z"></path>
+              </svg>
+            `;
+          }
+          return `
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M3 11.5 21 3l-8.5 18-1.95-7.55z"></path>
+            </svg>
+          `;
         }
 
         function syncMobileMapButtonState() {
           if (!$mobileUserLocationBtn) return;
-          $mobileUserLocationBtn.classList.toggle("is-active", !!map.tracksUserLocation);
+          const tracking = !!map.tracksUserLocation;
+          $mobileUserLocationBtn.innerHTML = getMobileLocationIconMarkup(tracking);
+          $mobileUserLocationBtn.setAttribute("aria-pressed", tracking ? "true" : "false");
         }
 
         syncMapChromeForViewport = () => {
-          const isMobile = isMobileViewport();
-          const restoreMapTypeControl = defaultShowsMapTypeControl !== false;
-          const restoreUserLocationControl = defaultShowsUserLocationControl !== false;
-
           if ($mobileMapControls) {
-            $mobileMapControls.hidden = !isMobile;
+            $mobileMapControls.hidden = false;
           }
 
           try {
-            if (isMobile) {
-              map.showsMapTypeControl = false;
-              map.showsUserLocationControl = false;
-            } else {
-              map.showsMapTypeControl = restoreMapTypeControl;
-              map.showsUserLocationControl = restoreUserLocationControl;
-            }
+            map.showsMapTypeControl = false;
+            map.showsUserLocationControl = false;
           } catch (_) {}
 
-          // Controls can be re-added during internal relayout; enforce the mobile hide once more.
-          if (isMobile) {
-            setTimeout(() => {
-              if (!isMobileViewport()) return;
-              try {
-                map.showsMapTypeControl = false;
-                map.showsUserLocationControl = false;
-              } catch (_) {}
-            }, 120);
-          }
+          // Controls can be re-added during internal relayout; enforce hidden state once more.
+          setTimeout(() => {
+            try {
+              map.showsMapTypeControl = false;
+              map.showsUserLocationControl = false;
+            } catch (_) {}
+          }, 120);
 
           syncMobileMapButtonState();
+          syncMobileMapStyleButtonState();
         };
 
         if ($mobileMapStyleBtn) {
           $mobileMapStyleBtn.addEventListener("click", () => {
-            const nextType = getNextMapType(map.mapType);
-            if (nextType) map.mapType = nextType;
+            const currentStyle = getMapStyleForType(map.mapType);
+            map.mapType = currentStyle === "hybrid" ? mapTypeByStyle.standard : mapTypeByStyle.hybrid;
+            syncMobileMapStyleButtonState();
           });
         }
 
