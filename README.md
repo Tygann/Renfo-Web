@@ -10,14 +10,36 @@ Renfo map + festival detail web app with a Cloudflare Worker WeatherKit proxy.
 - `styles/base.css`: global/page-level layout and base controls.
 - `styles/ui.css`: sidebar/detail/list component styles.
 - `styles/mobile.css`: mobile-specific overrides.
-- `app.js`: main orchestration (map wiring + UI state + rendering).
+- `app.js`: thin browser entry wrapper that imports `src/main.js`.
+- `src/main.js`: main orchestration (map wiring + UI state + rendering).
 - `src/lib/festival-utils.js`: festival/data formatting and grouping helpers.
 - `src/lib/weather.js`: forecast fetching, mapping, and caching.
 - `src/types.js`: shared JSDoc typedefs (`Festival`, `WeatherForecast`).
 - `config.js`: runtime client config (`MAPKIT_TOKEN`, weather endpoint, assets URL).
-- `festivals.json`: festival data source.
+- `data/festivals.json`: festival data source.
+- `assets/images/`: app images (brand logo, crown marker glyph, favicon).
 - `cloudflare/api-worker.js`: WeatherKit proxy worker.
 - `wrangler.jsonc`: worker name/routes/vars for deploys.
+
+## Code map
+
+- `app.js`
+  - Loads `src/main.js` as the runtime entrypoint.
+- `src/main.js`
+  - `loadFestivals()`: fetches and normalizes `data/festivals.json`.
+  - `renderListGrouped()`: renders the grouped/sorted left list.
+  - `updateDetailPanel()`: hydrates the right-side detail panel.
+  - `renderDetailWeather()`: renders forecast state/rows for selected festival.
+  - `main()`: app bootstrap (MapKit init, events, initial render).
+- `src/lib/festival-utils.js`
+  - `getDerivedFestivalStatus()`: computes active/upcoming/inactive/discontinued.
+  - `sortFestivals()`: sort strategy for list rendering.
+  - `getResourceEntries()`: resource link generation for detail panel.
+- `src/lib/weather.js`
+  - `fetchWeatherForecast()`: proxy/direct WeatherKit fetch path.
+  - `getWeatherForecast()`: cached weather accessor used by UI.
+- `cloudflare/api-worker.js`
+  - Worker entrypoint for `/api/weather` requests, token generation, and CORS.
 
 ## Local preview workflow (recommended)
 

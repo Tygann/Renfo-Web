@@ -1,8 +1,9 @@
 // @ts-check
 
+// Festival/domain formatting helpers shared by rendering and filtering logic.
 /** @typedef {import("../types.js").Festival} Festival */
 
-const DEFAULT_FESTIVAL_LOGO = "/renfo-logo.png";
+const DEFAULT_FESTIVAL_LOGO = "/assets/images/renfo-logo.png";
 const ASSETS_BASE_URL = String(
   window.RENFO_CONFIG?.ASSETS_BASE_URL || "https://assets.renfo.app",
 ).replace(/\/+$/, "");
@@ -47,6 +48,7 @@ function parseDate(value) {
   const raw = String(value).trim();
   const dateOnlyMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (dateOnlyMatch) {
+    // Treat YYYY-MM-DD values as local dates (not UTC) to avoid timezone drift.
     const year = Number(dateOnlyMatch[1]);
     const monthIndex = Number(dateOnlyMatch[2]) - 1;
     const day = Number(dateOnlyMatch[3]);
@@ -171,6 +173,7 @@ function getListIndicatorData(f, showUpcomingDaysInList) {
     const daysUntilStart = Number.isFinite(f?.daysUntilStart)
       ? f.daysUntilStart
       : null;
+    // Optional mode: show countdown days instead of generic "Soon" badge.
     if (
       showUpcomingDaysInList &&
       daysUntilStart != null &&

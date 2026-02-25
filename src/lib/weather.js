@@ -1,5 +1,6 @@
 // @ts-check
 
+// Weather data utilities: resolve WeatherKit data through proxy (preferred) or direct fallback.
 /** @typedef {import("../types.js").WeatherForecast} WeatherForecast */
 
 const weatherForecastCache = new Map();
@@ -108,6 +109,7 @@ function buildWeatherProxyUrl(baseUrl, lat, lng) {
 
 async function fetchWeatherForecast(lat, lng) {
   const proxyBaseUrl = getWeatherApiBaseUrl();
+  // Preferred path for web: proxy keeps Apple signing credentials off the client.
   if (proxyBaseUrl) {
     const proxyResponse = await fetch(
       buildWeatherProxyUrl(proxyBaseUrl, lat, lng),
@@ -168,9 +170,11 @@ async function fetchWeatherForecast(lat, lng) {
  */
 async function getWeatherForecast(lat, lng) {
   const key = getWeatherCacheKey(lat, lng);
+  // Cache the in-flight promise so repeated requests for same location coalesce.
   if (weatherForecastCache.has(key)) return weatherForecastCache.get(key);
 
   const promise = fetchWeatherForecast(lat, lng).catch((err) => {
+    // Failed calls should not stay cached.
     weatherForecastCache.delete(key);
     throw err;
   });
