@@ -194,7 +194,7 @@ function getListIndicatorData(f, showUpcomingDaysInList) {
     return {
       type: "status",
       variant: "inactive",
-      icon: "help-circle",
+      icon: "minus",
       ariaLabel: "Status: Inactive",
     };
   }

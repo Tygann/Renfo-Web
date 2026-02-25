@@ -10,7 +10,6 @@ Renfo map + festival detail web app with a Cloudflare Worker WeatherKit proxy.
 - `styles/base.css`: global/page-level layout and base controls.
 - `styles/ui.css`: sidebar/detail/list component styles.
 - `styles/mobile.css`: mobile-specific overrides.
-- `app.js`: thin browser entry wrapper that imports `src/main.js`.
 - `src/main.js`: main orchestration (map wiring + UI state + rendering).
 - `src/lib/festival-utils.js`: festival/data formatting and grouping helpers.
 - `src/lib/weather.js`: forecast fetching, mapping, and caching.
@@ -23,8 +22,6 @@ Renfo map + festival detail web app with a Cloudflare Worker WeatherKit proxy.
 
 ## Code map
 
-- `app.js`
-  - Loads `src/main.js` as the runtime entrypoint.
 - `src/main.js`
   - `loadFestivals()`: fetches and normalizes `data/festivals.json`.
   - `renderListGrouped()`: renders the grouped/sorted left list.
