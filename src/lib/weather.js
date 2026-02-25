@@ -22,14 +22,75 @@ function getWeatherCacheKey(lat, lng) {
   return `${Number(lat).toFixed(4)},${Number(lng).toFixed(4)}`;
 }
 
-function formatWeatherDayLabel(dateValue, index) {
-  const d = new Date(String(dateValue));
-  if (!Number.isFinite(d.getTime())) {
-    return index === 0 ? "Today" : `Day ${index + 1}`;
+function parseIsoDateParts(dateValue) {
+  const text = String(dateValue ?? "").trim();
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(text);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(day)
+  ) {
+    return null;
   }
-  if (index === 0) return "Today";
-  if (index === 1) return "Tomorrow";
-  return d.toLocaleDateString(undefined, { weekday: "short" });
+
+  const probe = new Date(Date.UTC(year, month - 1, day));
+  if (
+    probe.getUTCFullYear() !== year ||
+    probe.getUTCMonth() !== month - 1 ||
+    probe.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return { year, month, day };
+}
+
+function toUtcDayTimestamp(parts) {
+  return Date.UTC(parts.year, parts.month - 1, parts.day);
+}
+
+function formatWeekdayFromParts(parts) {
+  const utcMidday = new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12));
+  return utcMidday.toLocaleDateString(undefined, {
+    weekday: "short",
+    timeZone: "UTC",
+  });
+}
+
+function formatMonthDayFromParts(parts) {
+  const utcMidday = new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12));
+  return utcMidday.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function formatWeatherDayLabel(dateValue, index, firstDateValue = null) {
+  const parts = parseIsoDateParts(dateValue);
+  if (!parts) return index === 0 ? "Today" : `Day ${index + 1}`;
+
+  const firstParts = parseIsoDateParts(firstDateValue);
+  if (firstParts) {
+    const daysFromStart = Math.round(
+      (toUtcDayTimestamp(parts) - toUtcDayTimestamp(firstParts)) / 86400000,
+    );
+    if (daysFromStart === 0) return "Today";
+  } else {
+    if (index === 0) return "Today";
+  }
+
+  return formatWeekdayFromParts(parts);
+}
+
+function formatWeatherDateLabel(dateValue) {
+  const parts = parseIsoDateParts(dateValue);
+  if (!parts) return "";
+  return formatMonthDayFromParts(parts);
 }
 
 function isMetricWeatherUnits(units) {
@@ -50,6 +111,56 @@ function formatWeatherTemperature(value, units = null) {
     ? (value * 9) / 5 + 32
     : value;
   return `${Math.round(normalizedValue)}\u00B0`;
+}
+
+function parseWeatherPrecipChancePercent(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  const normalized = value <= 1 ? value * 100 : value;
+  if (!Number.isFinite(normalized)) return null;
+  const rounded = Math.round(normalized);
+  if (rounded <= 0) return null;
+  return Math.min(100, rounded);
+}
+
+function getMaxWeatherPrecipChancePercent(...values) {
+  let max = null;
+  for (const value of values) {
+    const parsed = parseWeatherPrecipChancePercent(value);
+    if (parsed == null) continue;
+    max = max == null ? parsed : Math.max(max, parsed);
+  }
+  return max;
+}
+
+function isWetPrecipitationType(type) {
+  const normalized = String(type ?? "")
+    .trim()
+    .toLowerCase();
+  if (!normalized || normalized === "clear") return false;
+  return /rain|drizzle|snow|sleet|hail|ice|mixed|freezing/.test(normalized);
+}
+
+function shouldDisplayWeatherPrecipChance(
+  precipChancePercent,
+  day,
+  daytimeForecast,
+  overnightForecast,
+  iconName,
+) {
+  if (precipChancePercent == null) return false;
+  if (
+    isWetPrecipitationType(day?.precipitationType) ||
+    isWetPrecipitationType(daytimeForecast?.precipitationType) ||
+    isWetPrecipitationType(overnightForecast?.precipitationType)
+  ) {
+    return true;
+  }
+
+  return (
+    iconName === "cloud-rain" ||
+    iconName === "cloud-lightning" ||
+    iconName === "snowflake"
+  );
 }
 
 function getWeatherConditionIconName(conditionCode, isDaylight = true) {
@@ -75,24 +186,45 @@ function mapWeatherPayload(payload) {
     payload?.forecastDaily?.metadata?.units ??
     payload?.currentWeather?.metadata?.units ??
     null;
-  const dailyRows = Array.isArray(payload?.forecastDaily?.days)
-    ? payload.forecastDaily.days.slice(0, 5).map((day, index) => {
-        const daytimeForecast = day?.daytimeForecast ?? {};
-        const overnightForecast = day?.overnightForecast ?? {};
-        return {
-          dayLabel: formatWeatherDayLabel(day?.forecastStart, index),
-          icon: getWeatherConditionIconName(
-            daytimeForecast.conditionCode ?? overnightForecast.conditionCode,
-            true,
-          ),
-          tempHigh: formatWeatherTemperature(
-            day?.temperatureMax,
-            forecastUnits,
-          ),
-          tempLow: formatWeatherTemperature(day?.temperatureMin, forecastUnits),
-        };
-      })
+  const forecastDays = Array.isArray(payload?.forecastDaily?.days)
+    ? payload.forecastDaily.days.slice(0, 10)
     : [];
+  const firstForecastDate = forecastDays[0]?.forecastStart ?? null;
+  const dailyRows = forecastDays.map((day, index) => {
+    const daytimeForecast = day?.daytimeForecast ?? {};
+    const overnightForecast = day?.overnightForecast ?? {};
+    const iconName = getWeatherConditionIconName(
+      day?.conditionCode ??
+        daytimeForecast.conditionCode ??
+        overnightForecast.conditionCode,
+      true,
+    );
+    const precipChancePercent = getMaxWeatherPrecipChancePercent(
+      day?.precipitationChance,
+      daytimeForecast?.precipitationChance,
+      overnightForecast?.precipitationChance,
+    );
+    const shouldShowPrecipChance = shouldDisplayWeatherPrecipChance(
+      precipChancePercent,
+      day,
+      daytimeForecast,
+      overnightForecast,
+      iconName,
+    );
+
+    return {
+      dayLabel: formatWeatherDayLabel(
+        day?.forecastStart,
+        index,
+        firstForecastDate,
+      ),
+      dateLabel: formatWeatherDateLabel(day?.forecastStart),
+      icon: iconName,
+      tempHigh: formatWeatherTemperature(day?.temperatureMax, forecastUnits),
+      tempLow: formatWeatherTemperature(day?.temperatureMin, forecastUnits),
+      precipChancePercent: shouldShowPrecipChance ? precipChancePercent : null,
+    };
+  });
 
   return {
     current,

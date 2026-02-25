@@ -138,6 +138,155 @@ function getLucideIconMarkup(name) {
   return `<i data-lucide="${name}" aria-hidden="true"></i>`;
 }
 
+const WEATHER_ICON_COLORS = Object.freeze({
+  sunCore: "#ffd66b",
+  sunCoreStroke: "#ffc24a",
+  sunRay: "#ffb739",
+  moon: "#dce2ff",
+  moonStroke: "#c1caf8",
+  cloud: "#f8fbff",
+  cloudShade: "#dce7f6",
+  cloudStroke: "#cfdbed",
+  rain: "#6ab9ff",
+  lightning: "#ffd65a",
+  lightningStroke: "#ffbf45",
+  fog: "#ccd9eb",
+  wind: "#d3dff2",
+  snow: "#a8deff",
+});
+
+const WEATHER_ICON_PATHS = Object.freeze({
+  cloudFull:
+    "M7 18h8.9a3.9 3.9 0 0 0 .4-7.8 5.2 5.2 0 0 0-9.8.8A3.2 3.2 0 0 0 7 18Z",
+  cloudCompact:
+    "M7.2 18h8.5a3.7 3.7 0 0 0 .3-7.4 4.8 4.8 0 0 0-8.9.7A3.1 3.1 0 0 0 7.2 18Z",
+  cloudLow:
+    "M7.1 15.5h8.8a3.9 3.9 0 0 0 .4-7.8 5.2 5.2 0 0 0-9.8.8 3.2 3.2 0 0 0 .6 7Z",
+});
+
+function getWeatherCloudMarkup(pathData, strokeWidth = "1.35") {
+  const c = WEATHER_ICON_COLORS;
+  return `
+      <path d="${pathData}" fill="${c.cloud}" stroke="${c.cloudStroke}" stroke-width="${strokeWidth}"></path>
+      <ellipse cx="12.5" cy="16.6" rx="5.3" ry="1.45" fill="${c.cloudShade}" opacity="0.62"></ellipse>
+  `;
+}
+
+function getWeatherIconSvg(name) {
+  const iconName = String(name ?? "")
+    .trim()
+    .toLowerCase();
+  const c = WEATHER_ICON_COLORS;
+
+  if (iconName === "sun") {
+    return `<svg class="weatherIconSvg" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="5.2" fill="${c.sunCore}" opacity="0.24"></circle>
+      <circle cx="12" cy="12" r="4.1" fill="${c.sunCore}" stroke="${c.sunCoreStroke}" stroke-width="1.35"></circle>
+      <circle cx="11.3" cy="11.3" r="1.95" fill="#fff2bd" opacity="0.55"></circle>
+      <g stroke="${c.sunRay}" stroke-linecap="round" stroke-width="1.7">
+        <path d="M12 2.4v2.2"></path>
+        <path d="M12 19.4v2.2"></path>
+        <path d="m4.9 4.9 1.6 1.6"></path>
+        <path d="m17.5 17.5 1.6 1.6"></path>
+        <path d="M2.4 12h2.2"></path>
+        <path d="M19.4 12h2.2"></path>
+        <path d="m4.9 19.1 1.6-1.6"></path>
+        <path d="m17.5 6.5 1.6-1.6"></path>
+      </g>
+    </svg>`;
+  }
+
+  if (iconName === "moon") {
+    return `<svg class="weatherIconSvg" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M15.6 3.4a8.8 8.8 0 1 0 5 14.9A9.5 9.5 0 0 1 15.6 3.4Z" fill="${c.moon}" stroke="${c.moonStroke}" stroke-width="1.35"></path>
+      <circle cx="15.1" cy="8.1" r="1.1" fill="#edf0ff" opacity="0.62"></circle>
+    </svg>`;
+  }
+
+  if (iconName === "cloud") {
+    return `<svg class="weatherIconSvg" viewBox="0 0 24 24" aria-hidden="true">
+      ${getWeatherCloudMarkup(WEATHER_ICON_PATHS.cloudFull, "1.35")}
+    </svg>`;
+  }
+
+  if (iconName === "cloud-sun") {
+    return `<svg class="weatherIconSvg" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="8.7" cy="8.5" r="3.3" fill="${c.sunCore}" opacity="0.22"></circle>
+      <circle cx="8.7" cy="8.5" r="2.8" fill="${c.sunCore}" stroke="${c.sunCoreStroke}" stroke-width="1.15"></circle>
+      <g stroke="${c.sunRay}" stroke-linecap="round" stroke-width="1.42">
+        <path d="M8.7 3.6v1.5"></path>
+        <path d="M8.7 12v1.5"></path>
+        <path d="m5.2 5.1 1.1 1.1"></path>
+        <path d="m11 10.9 1.1 1.1"></path>
+        <path d="M3.8 8.5h1.5"></path>
+        <path d="M12.1 8.5h1.5"></path>
+      </g>
+      ${getWeatherCloudMarkup(WEATHER_ICON_PATHS.cloudCompact, "1.28")}
+    </svg>`;
+  }
+
+  if (iconName === "cloud-moon") {
+    return `<svg class="weatherIconSvg" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M10.8 4.2a5.1 5.1 0 0 0 5.4 6.6 5.8 5.8 0 0 1-5.4-6.6Z" fill="${c.moon}" stroke="${c.moonStroke}" stroke-width="1.12"></path>
+      ${getWeatherCloudMarkup(WEATHER_ICON_PATHS.cloudCompact, "1.28")}
+    </svg>`;
+  }
+
+  if (iconName === "cloud-rain") {
+    return `<svg class="weatherIconSvg" viewBox="0 0 24 24" aria-hidden="true">
+      ${getWeatherCloudMarkup(WEATHER_ICON_PATHS.cloudLow, "1.35")}
+      <g stroke="${c.rain}" stroke-linecap="round" stroke-width="1.68">
+        <path d="m9 17.7-.9 2"></path>
+        <path d="m13 17.7-.9 2"></path>
+        <path d="m17 17.7-.9 2"></path>
+      </g>
+    </svg>`;
+  }
+
+  if (iconName === "cloud-lightning") {
+    return `<svg class="weatherIconSvg" viewBox="0 0 24 24" aria-hidden="true">
+      ${getWeatherCloudMarkup(WEATHER_ICON_PATHS.cloudLow, "1.35")}
+      <path d="m11.5 15.8-1.4 3h2.1l-1.3 2.8 4-4.8h-2.1l1.3-3Z" fill="${c.lightning}" stroke="${c.lightningStroke}" stroke-width="1.02"></path>
+    </svg>`;
+  }
+
+  if (iconName === "cloud-fog") {
+    return `<svg class="weatherIconSvg" viewBox="0 0 24 24" aria-hidden="true">
+      ${getWeatherCloudMarkup(WEATHER_ICON_PATHS.cloudLow, "1.35")}
+      <g stroke="${c.fog}" stroke-linecap="round" stroke-width="1.5">
+        <path d="M7.4 17.2h9.4"></path>
+        <path d="M8.8 19.6h8"></path>
+      </g>
+    </svg>`;
+  }
+
+  if (iconName === "wind") {
+    return `<svg class="weatherIconSvg" viewBox="0 0 24 24" aria-hidden="true">
+      <g stroke="${c.wind}" stroke-linecap="round" stroke-width="1.9" fill="none">
+        <path d="M3.6 8.7h9.7c2 0 2-3.1.1-3.1-.9 0-1.6.5-1.9 1.2"></path>
+        <path d="M2.8 12.8h14.1c2.7 0 2.8 3.9.1 3.9-1.2 0-2.1-.7-2.5-1.6"></path>
+        <path d="M4.7 17.1h7.5"></path>
+      </g>
+    </svg>`;
+  }
+
+  if (iconName === "snowflake") {
+    return `<svg class="weatherIconSvg" viewBox="0 0 24 24" aria-hidden="true">
+      <g stroke="${c.snow}" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7">
+        <path d="M12 4.2v15.6"></path>
+        <path d="M5.2 8.1 18.8 16"></path>
+        <path d="M18.8 8.1 5.2 16"></path>
+        <path d="m12 4.2 1.4 1.4"></path>
+        <path d="m12 4.2-1.4 1.4"></path>
+        <path d="m12 19.8 1.4-1.4"></path>
+        <path d="m12 19.8-1.4-1.4"></path>
+      </g>
+    </svg>`;
+  }
+
+  return getLucideIconMarkup(iconName || "cloud");
+}
+
 function refreshLucideIcons() {
   if (!window.lucide?.createIcons) return;
   window.lucide.createIcons({
@@ -230,6 +379,11 @@ const $detailResources = document.getElementById("detailResources");
 const $mobileMapControls = document.getElementById("mobileMapControls");
 const $mobileMapStyleBtn = document.getElementById("mobileMapStyleBtn");
 const $mobileUserLocationBtn = document.getElementById("mobileUserLocationBtn");
+const $aboutOpenBtn = document.getElementById("aboutOpenBtn");
+const $aboutModal = document.getElementById("aboutModal");
+const $aboutDialog = document.getElementById("aboutDialog");
+const $aboutCloseBtn = document.getElementById("aboutCloseBtn");
+const $aboutBackdrop = document.getElementById("aboutBackdrop");
 
 // Shared UI/runtime state.
 let selectedFestivalId = null;
@@ -357,6 +511,29 @@ function toggleChoices(type) {
   const opening = $sortChoices.hidden;
   setChoicesOpen("sort", opening);
   setChoicesOpen("group", false);
+}
+
+function isAboutModalOpen() {
+  return Boolean($aboutModal && !$aboutModal.hidden);
+}
+
+function openAboutModal() {
+  if (!$aboutModal) return;
+  closeOptionsMenu();
+  $aboutModal.hidden = false;
+  document.body.classList.add("about-open");
+  refreshLucideIcons();
+  requestAnimationFrame(() => {
+    $aboutCloseBtn?.focus();
+  });
+}
+
+function closeAboutModal(options = {}) {
+  const { restoreFocus = true } = options;
+  if (!$aboutModal || $aboutModal.hidden) return;
+  $aboutModal.hidden = true;
+  document.body.classList.remove("about-open");
+  if (restoreFocus) $aboutOpenBtn?.focus();
 }
 
 function setSelectValue(selectEl, value) {
@@ -526,8 +703,24 @@ $optionsMenu.addEventListener("click", (event) => event.stopPropagation());
 $groupMenuRow.addEventListener("click", () => toggleChoices("group"));
 $sortMenuRow.addEventListener("click", () => toggleChoices("sort"));
 document.addEventListener("click", closeOptionsMenu);
+$aboutOpenBtn?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  openAboutModal();
+});
+$aboutCloseBtn?.addEventListener("click", () => {
+  closeAboutModal();
+});
+$aboutBackdrop?.addEventListener("click", () => {
+  closeAboutModal();
+});
+$aboutDialog?.addEventListener("click", (event) => event.stopPropagation());
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closeOptionsMenu();
+  if (event.key !== "Escape") return;
+  if (isAboutModalOpen()) {
+    closeAboutModal();
+    return;
+  }
+  closeOptionsMenu();
 });
 $searchClearBtn.addEventListener("click", () => {
   if (!$search.value) return;
@@ -773,24 +966,67 @@ async function renderDetailWeather(f, renderVersion) {
       const row = document.createElement("div");
       row.className = "detailWeatherRow";
 
+      const iconWrap = document.createElement("span");
+      iconWrap.className = "detailWeatherIconWrap";
+
       const icon = document.createElement("span");
       icon.className = "detailWeatherIcon";
       icon.setAttribute("aria-hidden", "true");
-      icon.innerHTML = getLucideIconMarkup(day.icon);
+      icon.innerHTML = getWeatherIconSvg(day.icon);
+      iconWrap.append(icon);
+
+      if (
+        typeof day.precipChancePercent === "number" &&
+        Number.isFinite(day.precipChancePercent) &&
+        day.precipChancePercent > 0
+      ) {
+        row.classList.add("has-precip");
+        const precipChance = document.createElement("span");
+        precipChance.className = "detailWeatherPrecip";
+        precipChance.textContent = `${Math.round(day.precipChancePercent)}%`;
+        iconWrap.append(precipChance);
+      }
 
       const main = document.createElement("div");
       main.className = "detailWeatherMain";
 
       const dayLabel = document.createElement("p");
       dayLabel.className = "detailWeatherDay";
-      dayLabel.textContent = day.dayLabel;
+      const dayLabelText = document.createElement("span");
+      dayLabelText.className = "detailWeatherDayText";
+      dayLabelText.textContent = day.dayLabel;
+      dayLabel.append(dayLabelText);
+
+      if (day.dateLabel) {
+        const dayDateDivider = document.createElement("span");
+        dayDateDivider.className = "detailWeatherDayDivider";
+        dayDateDivider.textContent = "\u00B7";
+
+        const dayDateLabel = document.createElement("span");
+        dayDateLabel.className = "detailWeatherDate";
+        dayDateLabel.textContent = day.dateLabel;
+
+        dayLabel.append(dayDateDivider, dayDateLabel);
+      }
       main.append(dayLabel);
 
       const temps = document.createElement("p");
       temps.className = "detailWeatherTemps";
-      temps.textContent = `${day.tempHigh} / ${day.tempLow}`;
+      const tempHigh = document.createElement("span");
+      tempHigh.className = "detailWeatherTempHigh";
+      tempHigh.textContent = day.tempHigh;
 
-      row.append(icon, main, temps);
+      const tempDivider = document.createElement("span");
+      tempDivider.className = "detailWeatherTempDivider";
+      tempDivider.textContent = " / ";
+
+      const tempLow = document.createElement("span");
+      tempLow.className = "detailWeatherTempLow";
+      tempLow.textContent = day.tempLow;
+
+      temps.append(tempHigh, tempDivider, tempLow);
+
+      row.append(iconWrap, main, temps);
       $detailWeatherRows.appendChild(row);
     }
     refreshLucideIcons();

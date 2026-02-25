@@ -38,9 +38,14 @@
     <meta property="og:url" content="https://www.renfo.app/" />
     <meta
       property="og:image"
-      content="https://www.renfo.app/assets/images/renfo-logo.png"
+      content="https://www.renfo.app/assets/images/renfo-banner.png"
     />
-    <meta property="og:image:alt" content="Renfo logo" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Renfo banner with map and Renaissance Festival listings"
+    />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Renfo - Renaissance Festival Companion" />
     <meta
@@ -49,7 +54,11 @@
     />
     <meta
       name="twitter:image"
-      content="https://www.renfo.app/assets/images/renfo-logo.png"
+      content="https://www.renfo.app/assets/images/renfo-banner.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="Renfo banner with map and Renaissance Festival listings"
     />
     <title>Renfo - Renaissance Festival Map</title>
 
@@ -387,15 +396,6 @@
           <section class="detailCard detailWeatherPanel">
             <p id="detailWeatherStatus"></p>
             <div id="detailWeatherRows"></div>
-            <p class="detailWeatherAttribution">
-              Weather data by Apple Weather.
-              <a
-                href="https://weatherkit.apple.com/legal-attribution.html"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Data sources</a
-              >
-            </p>
           </section>
         </div>
 
@@ -464,7 +464,82 @@
       </button>
     </div>
     <div id="siteMeta" aria-label="Site info">
-      <span>&copy; <span class="siteYear"></span> Renfo</span>
+      <button
+        id="aboutOpenBtn"
+        type="button"
+        class="siteMetaIconBtn"
+        aria-label="Open about"
+        title="About"
+      >
+        <span class="siteMetaInfoGlyph" aria-hidden="true">i</span>
+      </button>
+    </div>
+
+    <div id="aboutModal" hidden>
+      <button
+        id="aboutBackdrop"
+        type="button"
+        aria-label="Close about dialog"
+      ></button>
+      <section
+        id="aboutDialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="aboutTitle"
+      >
+        <header id="aboutHeader">
+          <p id="aboutTitle">About</p>
+          <button
+            id="aboutCloseBtn"
+            type="button"
+            aria-label="Close about dialog"
+            title="Close"
+          >
+            <i data-lucide="x" aria-hidden="true"></i>
+          </button>
+        </header>
+
+        <div id="aboutBrand">
+          <img
+            id="aboutBrandLogo"
+            src="/assets/images/renfo-logo.png"
+            alt=""
+            aria-hidden="true"
+          />
+          <p id="aboutBrandName">Renfo</p>
+        </div>
+
+        <p id="aboutDescription">
+          Renfo is your ultimate companion for exploring the enchanting world of
+          Renaissance Festivals, designed by a passionate fair goer just like yourself.
+        </p>
+
+        <a
+          id="aboutSupportBtn"
+          href="mailto:support@renfo.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Contact support by email"
+        >
+          <span id="aboutSupportIcon" aria-hidden="true">
+            <i data-lucide="message-square-more"></i>
+          </span>
+          <span>Contact Support</span>
+        </a>
+
+        <p id="aboutWeather">
+          Weather powered by:
+          <a
+            href="https://weatherkit.apple.com/legal-attribution.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Apple Weather</a
+          >
+        </p>
+        <p id="aboutLegal">
+          &copy; <span class="siteYear"></span> Renfo. All rights reserved.
+        </p>
+      </section>
     </div>
 
     <script type="module" src="/src/main.js"></script>

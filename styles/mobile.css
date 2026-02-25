@@ -145,6 +145,54 @@
     pointer-events: auto;
   }
 
+  #aboutModal {
+    padding: calc(8px + env(safe-area-inset-top, 0px)) 10px
+      calc(8px + max(env(safe-area-inset-bottom, 0px), var(--browser-bottom-inset, 0px)));
+  }
+
+  #aboutDialog {
+    width: calc(100vw - 20px);
+    border-radius: 28px;
+    padding: 11px 12px 16px;
+  }
+
+  #aboutHeader {
+    min-height: 40px;
+  }
+
+  #aboutTitle {
+    font-size: 19px;
+  }
+
+  #aboutBrand {
+    margin-top: 14px;
+  }
+
+  #aboutBrandLogo {
+    width: 90px;
+    height: 90px;
+  }
+
+  #aboutBrandName {
+    font-size: 30px;
+  }
+
+  #aboutDescription {
+    margin-top: 18px;
+    font-size: 14.5px;
+  }
+
+  #aboutSupportBtn {
+    margin-top: 20px;
+    border-radius: 16px;
+    font-size: 15px;
+  }
+
+  #aboutWeather,
+  #aboutLegal {
+    font-size: 13px;
+  }
+
   #detailSidebar {
     left: 0;
     right: 0;

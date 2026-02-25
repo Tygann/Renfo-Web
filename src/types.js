@@ -45,9 +45,11 @@
 /**
  * @typedef {Object} WeatherDay
  * @property {string} dayLabel
+ * @property {string=} dateLabel
  * @property {string} icon
  * @property {string} tempHigh
  * @property {string} tempLow
+ * @property {number|null=} precipChancePercent
  */
 
 /**
