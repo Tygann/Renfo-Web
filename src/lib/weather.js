@@ -5,7 +5,9 @@
 const weatherForecastCache = new Map();
 
 function getWeatherKitToken() {
-  const weatherToken = String(window.RENFO_CONFIG?.WEATHERKIT_TOKEN ?? "").trim();
+  const weatherToken = String(
+    window.RENFO_CONFIG?.WEATHERKIT_TOKEN ?? "",
+  ).trim();
   if (weatherToken) return weatherToken;
   const mapToken = String(window.RENFO_CONFIG?.MAPKIT_TOKEN ?? "").trim();
   return mapToken || null;
@@ -30,8 +32,15 @@ function formatWeatherDayLabel(dateValue, index) {
 }
 
 function isMetricWeatherUnits(units) {
-  const normalized = String(units ?? "").trim().toLowerCase();
-  return normalized === "m" || normalized === "metric" || normalized === "si" || normalized === "c";
+  const normalized = String(units ?? "")
+    .trim()
+    .toLowerCase();
+  return (
+    normalized === "m" ||
+    normalized === "metric" ||
+    normalized === "si" ||
+    normalized === "c"
+  );
 }
 
 function formatWeatherTemperature(value, units = null) {
@@ -45,36 +54,48 @@ function formatWeatherTemperature(value, units = null) {
 function getWeatherConditionIconName(conditionCode, isDaylight = true) {
   const code = String(conditionCode ?? "").toLowerCase();
   if (!code) return "cloud";
-  if (/(thunder|storm|tropicalstorm|hurricane)/.test(code)) return "cloud-lightning";
-  if (/(snow|sleet|flurries|blizzard|hail|frigid|freezing)/.test(code)) return "snowflake";
+  if (/(thunder|storm|tropicalstorm|hurricane)/.test(code))
+    return "cloud-lightning";
+  if (/(snow|sleet|flurries|blizzard|hail|frigid|freezing)/.test(code))
+    return "snowflake";
   if (/(rain|drizzle|showers)/.test(code)) return "cloud-rain";
   if (/(wind|breezy|blowingdust)/.test(code)) return "wind";
   if (/(fog|haze|smoke|dust)/.test(code)) return "cloud-fog";
   if (/(clear|sunny)/.test(code)) return isDaylight ? "sun" : "moon";
-  if (/(mostlyclear|partlycloudy)/.test(code)) return isDaylight ? "cloud-sun" : "cloud-moon";
+  if (/(mostlyclear|partlycloudy)/.test(code))
+    return isDaylight ? "cloud-sun" : "cloud-moon";
   if (/(cloudy|overcast)/.test(code)) return "cloud";
   return "cloud";
 }
 
 function mapWeatherPayload(payload) {
   const current = payload?.currentWeather ?? null;
-  const forecastUnits = payload?.forecastDaily?.metadata?.units ?? payload?.currentWeather?.metadata?.units ?? null;
+  const forecastUnits =
+    payload?.forecastDaily?.metadata?.units ??
+    payload?.currentWeather?.metadata?.units ??
+    null;
   const dailyRows = Array.isArray(payload?.forecastDaily?.days)
     ? payload.forecastDaily.days.slice(0, 5).map((day, index) => {
         const daytimeForecast = day?.daytimeForecast ?? {};
         const overnightForecast = day?.overnightForecast ?? {};
         return {
           dayLabel: formatWeatherDayLabel(day?.forecastStart, index),
-          icon: getWeatherConditionIconName(daytimeForecast.conditionCode ?? overnightForecast.conditionCode, true),
-          tempHigh: formatWeatherTemperature(day?.temperatureMax, forecastUnits),
-          tempLow: formatWeatherTemperature(day?.temperatureMin, forecastUnits)
+          icon: getWeatherConditionIconName(
+            daytimeForecast.conditionCode ?? overnightForecast.conditionCode,
+            true,
+          ),
+          tempHigh: formatWeatherTemperature(
+            day?.temperatureMax,
+            forecastUnits,
+          ),
+          tempLow: formatWeatherTemperature(day?.temperatureMin, forecastUnits),
         };
       })
     : [];
 
   return {
     current,
-    days: dailyRows
+    days: dailyRows,
   };
 }
 
@@ -88,12 +109,17 @@ function buildWeatherProxyUrl(baseUrl, lat, lng) {
 async function fetchWeatherForecast(lat, lng) {
   const proxyBaseUrl = getWeatherApiBaseUrl();
   if (proxyBaseUrl) {
-    const proxyResponse = await fetch(buildWeatherProxyUrl(proxyBaseUrl, lat, lng), {
-      cache: "no-store"
-    });
+    const proxyResponse = await fetch(
+      buildWeatherProxyUrl(proxyBaseUrl, lat, lng),
+      {
+        cache: "no-store",
+      },
+    );
 
     if (!proxyResponse.ok) {
-      const proxyError = new Error(`Weather API request failed with status ${proxyResponse.status}.`);
+      const proxyError = new Error(
+        `Weather API request failed with status ${proxyResponse.status}.`,
+      );
       proxyError.code = "http_error";
       proxyError.status = proxyResponse.status;
       proxyError.source = "proxy";
@@ -116,13 +142,15 @@ async function fetchWeatherForecast(lat, lng) {
 
   const response = await fetch(url, {
     headers: {
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     },
-    cache: "no-store"
+    cache: "no-store",
   });
 
   if (!response.ok) {
-    const err = new Error(`WeatherKit request failed with status ${response.status}.`);
+    const err = new Error(
+      `WeatherKit request failed with status ${response.status}.`,
+    );
     err.code = "http_error";
     err.status = response.status;
     err.source = "weatherkit_direct";
@@ -142,7 +170,7 @@ async function getWeatherForecast(lat, lng) {
   const key = getWeatherCacheKey(lat, lng);
   if (weatherForecastCache.has(key)) return weatherForecastCache.get(key);
 
-  const promise = fetchWeatherForecast(lat, lng).catch(err => {
+  const promise = fetchWeatherForecast(lat, lng).catch((err) => {
     weatherForecastCache.delete(key);
     throw err;
   });
@@ -150,6 +178,4 @@ async function getWeatherForecast(lat, lng) {
   return promise;
 }
 
-export {
-  getWeatherForecast
-};
+export { getWeatherForecast };

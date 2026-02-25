@@ -3,3 +3,4 @@ AuthKey_*.p8
 .env
 .wrangler/
 .dev.vars
+node_modules/

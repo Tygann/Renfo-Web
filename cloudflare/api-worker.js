@@ -14,7 +14,7 @@ function getAllowedOrigins(env) {
   if (multi) {
     const list = multi
       .split(",")
-      .map(value => value.trim())
+      .map((value) => value.trim())
       .filter(Boolean);
     if (list.length > 0) return list;
   }
@@ -35,7 +35,9 @@ function isOriginAllowed(origin, allowedOrigins) {
       continue;
     }
 
-    const regex = new RegExp(`^${escapeRegexLiteral(allowed).replace(/\\\*/g, ".*")}$`);
+    const regex = new RegExp(
+      `^${escapeRegexLiteral(allowed).replace(/\\\*/g, ".*")}$`,
+    );
     if (regex.test(origin)) return true;
   }
   return false;
@@ -171,13 +173,15 @@ async function getSigningKey(env) {
     pemToArrayBuffer(p8),
     { name: "ECDSA", namedCurve: "P-256" },
     false,
-    ["sign"]
+    ["sign"],
   );
   return cachedSigningKeyPromise;
 }
 
 function getTokenTtlSeconds(env) {
-  const raw = Number(getEnvString(env, "WEATHERKIT_TOKEN_TTL_SECONDS") || "1800");
+  const raw = Number(
+    getEnvString(env, "WEATHERKIT_TOKEN_TTL_SECONDS") || "1800",
+  );
   if (!Number.isFinite(raw) || raw <= 0) return 1800;
   return Math.max(300, Math.min(3600, Math.floor(raw)));
 }
@@ -203,13 +207,13 @@ async function getWeatherKitToken(env) {
     alg: "ES256",
     kid: keyId,
     id: `${teamId}.${serviceId}`,
-    typ: "JWT"
+    typ: "JWT",
   };
   const payload = {
     iss: teamId,
     sub: serviceId,
     iat: nowUnix,
-    exp: expUnix
+    exp: expUnix,
   };
 
   const encodedHeader = stringToBase64Url(JSON.stringify(header));
@@ -220,8 +224,8 @@ async function getWeatherKitToken(env) {
     await crypto.subtle.sign(
       { name: "ECDSA", hash: "SHA-256" },
       key,
-      encoder.encode(signingInput)
-    )
+      encoder.encode(signingInput),
+    ),
   );
   const signatureJose = derToJoseSignature(signatureDer);
   const token = `${signingInput}.${toBase64Url(signatureJose)}`;
@@ -245,18 +249,23 @@ function buildCorsHeaders(request, env) {
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Max-Age": "86400",
-    Vary: "Origin"
+    Vary: "Origin",
   };
 }
 
-function jsonResponse(status, payload, corsHeaders = {}, cacheControl = "no-store") {
+function jsonResponse(
+  status,
+  payload,
+  corsHeaders = {},
+  cacheControl = "no-store",
+) {
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": cacheControl,
-      ...corsHeaders
-    }
+      ...corsHeaders,
+    },
   });
 }
 
@@ -303,15 +312,15 @@ export default {
       const token = await getWeatherKitToken(env);
       const weatherResponse = await fetch(buildWeatherKitUrl(lat, lng), {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!weatherResponse.ok) {
         return jsonResponse(
           weatherResponse.status,
           { error: "weatherkit_error", status: weatherResponse.status },
-          corsHeaders
+          corsHeaders,
         );
       }
 
@@ -320,13 +329,20 @@ export default {
         200,
         {
           currentWeather: weatherPayload?.currentWeather ?? null,
-          forecastDaily: weatherPayload?.forecastDaily ?? null
+          forecastDaily: weatherPayload?.forecastDaily ?? null,
         },
         corsHeaders,
-        "public, max-age=600"
+        "public, max-age=600",
       );
     } catch (error) {
-      return jsonResponse(500, { error: "proxy_error", message: String(error?.message ?? "Unknown error.") }, corsHeaders);
+      return jsonResponse(
+        500,
+        {
+          error: "proxy_error",
+          message: String(error?.message ?? "Unknown error."),
+        },
+        corsHeaders,
+      );
     }
-  }
+  },
 };

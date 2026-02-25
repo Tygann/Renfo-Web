@@ -3,7 +3,9 @@
 /** @typedef {import("../types.js").Festival} Festival */
 
 const DEFAULT_FESTIVAL_LOGO = "/renfo-logo.png";
-const ASSETS_BASE_URL = String(window.RENFO_CONFIG?.ASSETS_BASE_URL || "https://assets.renfo.app").replace(/\/+$/, "");
+const ASSETS_BASE_URL = String(
+  window.RENFO_CONFIG?.ASSETS_BASE_URL || "https://assets.renfo.app",
+).replace(/\/+$/, "");
 
 function sanitizeAssetPart(value) {
   return String(value ?? "")
@@ -24,7 +26,11 @@ function getFestivalAssetUrl(f, type) {
   return `${ASSETS_BASE_URL}/${state}-${abbreviation}-${assetType}.png`;
 }
 
-function setImageWithFallback(img, primarySrc, fallbackSrc = DEFAULT_FESTIVAL_LOGO) {
+function setImageWithFallback(
+  img,
+  primarySrc,
+  fallbackSrc = DEFAULT_FESTIVAL_LOGO,
+) {
   img.onerror = () => {
     img.onerror = null;
     img.src = fallbackSrc;
@@ -114,18 +120,20 @@ function formatLastUpdated(value) {
   const datePart = updatedAt.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric"
+    year: "numeric",
   });
   const timePart = updatedAt.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
-    hour12: true
+    hour12: true,
   });
   return `Last Updated: ${datePart} at ${timePart}`;
 }
 
 function compareByName(a, b) {
-  return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" });
+  return (a.name || "").localeCompare(b.name || "", undefined, {
+    sensitivity: "base",
+  });
 }
 
 function compareByStartDate(a, b) {
@@ -151,24 +159,50 @@ function getListIndicatorData(f, showUpcomingDaysInList) {
   const status = normalize(f?.status).trim();
 
   if (status === "active") {
-    return { type: "status", variant: "active", icon: "check", ariaLabel: "Status: Active" };
+    return {
+      type: "status",
+      variant: "active",
+      icon: "check",
+      ariaLabel: "Status: Active",
+    };
   }
 
   if (status === "upcoming") {
-    const daysUntilStart = Number.isFinite(f?.daysUntilStart) ? f.daysUntilStart : null;
-    if (showUpcomingDaysInList && daysUntilStart != null && daysUntilStart >= 0) {
+    const daysUntilStart = Number.isFinite(f?.daysUntilStart)
+      ? f.daysUntilStart
+      : null;
+    if (
+      showUpcomingDaysInList &&
+      daysUntilStart != null &&
+      daysUntilStart >= 0
+    ) {
       return { type: "days", daysUntilStart };
     }
 
-    return { type: "status", variant: "upcoming", text: "Soon", ariaLabel: "Status: Upcoming" };
+    return {
+      type: "status",
+      variant: "upcoming",
+      text: "Soon",
+      ariaLabel: "Status: Upcoming",
+    };
   }
 
   if (status === "inactive") {
-    return { type: "status", variant: "inactive", icon: "help-circle", ariaLabel: "Status: Inactive" };
+    return {
+      type: "status",
+      variant: "inactive",
+      icon: "help-circle",
+      ariaLabel: "Status: Inactive",
+    };
   }
 
   if (status === "discontinued") {
-    return { type: "status", variant: "discontinued", icon: "x", ariaLabel: "Status: Discontinued" };
+    return {
+      type: "status",
+      variant: "discontinued",
+      icon: "x",
+      ariaLabel: "Status: Discontinued",
+    };
   }
 
   return null;
@@ -182,19 +216,23 @@ function sortFestivals(items, sortMode) {
 
 function sortGroupKeys(groupKeys, groupMode) {
   if (groupMode !== "status") {
-    return groupKeys.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+    return groupKeys.sort((a, b) =>
+      a.localeCompare(b, undefined, { sensitivity: "base" }),
+    );
   }
 
   const statusOrder = new Map([
     ["active", 0],
     ["upcoming", 1],
     ["inactive", 2],
-    ["discontinued", 3]
+    ["discontinued", 3],
   ]);
 
   return groupKeys.sort((a, b) => {
-    const rankA = statusOrder.get(normalize(a).trim()) ?? Number.MAX_SAFE_INTEGER;
-    const rankB = statusOrder.get(normalize(b).trim()) ?? Number.MAX_SAFE_INTEGER;
+    const rankA =
+      statusOrder.get(normalize(a).trim()) ?? Number.MAX_SAFE_INTEGER;
+    const rankB =
+      statusOrder.get(normalize(b).trim()) ?? Number.MAX_SAFE_INTEGER;
     if (rankA !== rankB) return rankA - rankB;
     return a.localeCompare(b, undefined, { sensitivity: "base" });
   });
@@ -276,7 +314,8 @@ function normalizeSocialUrl(platform, rawValue) {
   if (platform === "x") return `https://x.com/${handle}`;
   if (platform === "youtube") {
     if (value.startsWith("@")) return `https://youtube.com/${value}`;
-    if (/^(channel\/|c\/|user\/)/i.test(value)) return `https://youtube.com/${value}`;
+    if (/^(channel\/|c\/|user\/)/i.test(value))
+      return `https://youtube.com/${value}`;
     return `https://youtube.com/${handle}`;
   }
   return null;
@@ -287,11 +326,11 @@ function getSocialEntries(f) {
     { platform: "facebook", label: "Facebook", value: f.facebook },
     { platform: "instagram", label: "Instagram", value: f.instagram },
     { platform: "x", label: "X", value: f.x },
-    { platform: "youtube", label: "YouTube", value: f.youtube }
+    { platform: "youtube", label: "YouTube", value: f.youtube },
   ];
 
   return candidates
-    .map(item => {
+    .map((item) => {
       const href = normalizeSocialUrl(item.platform, item.value);
       return href ? { ...item, href } : null;
     })
@@ -312,11 +351,31 @@ function normalizeResourceHref(rawValue) {
 
 function getResourceEntries(f) {
   return [
-    { type: "map", label: "Festival Map", href: f.mapAssetUrl, probeImage: true },
-    { type: "camp", label: "Campground Map", href: f.campAssetUrl, probeImage: true },
-    { type: "tickets", label: "Tickets", href: normalizeResourceHref(f.tickets), probeImage: false },
-    { type: "lostFound", label: "Lost & Found", href: normalizeResourceHref(f.lostAndFound), probeImage: false }
-  ].filter(item => !!item.href);
+    {
+      type: "map",
+      label: "Festival Map",
+      href: f.mapAssetUrl,
+      probeImage: true,
+    },
+    {
+      type: "camp",
+      label: "Campground Map",
+      href: f.campAssetUrl,
+      probeImage: true,
+    },
+    {
+      type: "tickets",
+      label: "Tickets",
+      href: normalizeResourceHref(f.tickets),
+      probeImage: false,
+    },
+    {
+      type: "lostFound",
+      label: "Lost & Found",
+      href: normalizeResourceHref(f.lostAndFound),
+      probeImage: false,
+    },
+  ].filter((item) => !!item.href);
 }
 
 export {
@@ -338,5 +397,5 @@ export {
   getEstablishedYear,
   buildDirectionsHref,
   getSocialEntries,
-  getResourceEntries
+  getResourceEntries,
 };

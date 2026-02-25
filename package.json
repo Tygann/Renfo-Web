@@ -1,0 +1,32 @@
+{
+  "name": "renfo-web",
+  "version": "1.0.0",
+  "description": "Renfo map + festival detail web app with a Cloudflare Worker WeatherKit proxy.",
+  "private": true,
+  "scripts": {
+    "check": "npm run lint",
+    "check:all": "npm run lint && npm run format:check",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tygann/Renfo-Web.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Tygann/Renfo-Web/issues"
+  },
+  "homepage": "https://github.com/Tygann/Renfo-Web#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.2",
+    "globals": "^17.3.0",
+    "prettier": "^3.8.1"
+  }
+}

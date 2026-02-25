@@ -88,7 +88,11 @@
   display: inline-block;
 }
 
-.icon svg { width: 100%; height: 100%; display: block; }
+.icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 
 #brandLogo {
   width: 22px;
@@ -96,7 +100,7 @@
   flex: 0 0 auto;
   display: block;
   object-fit: contain;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12));
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.12));
 }
 
 .iconButton {
@@ -110,14 +114,18 @@
   align-items: center;
   justify-content: center;
   gap: 0;
-  transition: box-shadow 150ms ease, transform 120ms ease;
+  transition:
+    box-shadow 150ms ease,
+    transform 120ms ease;
 }
 
 .iconButton:hover,
 .iconButton:focus-visible {
   box-shadow: inset 0 0 0 999px var(--row-hover);
 }
-.iconButton:active { transform: translateY(0.5px); }
+.iconButton:active {
+  transform: translateY(0.5px);
+}
 
 #optionsBtn {
   width: 44px;
@@ -145,9 +153,9 @@
   padding: 8px 8px 10px 8px;
   border-radius: 24px;
   border: 0;
-  background: color-mix(in srgb, var(--panel-bg) 82%, rgba(10,10,14,0.56));
+  background: color-mix(in srgb, var(--panel-bg) 82%, rgba(10, 10, 14, 0.56));
   color: var(--text);
-  box-shadow: 0 16px 34px rgba(0,0,0,0.32);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.32);
   backdrop-filter: blur(20px) saturate(120%);
   -webkit-backdrop-filter: blur(20px) saturate(120%);
   transform-origin: top right;
@@ -365,7 +373,7 @@
   align-items: center;
   justify-content: center;
   background: color-mix(in srgb, var(--subtext) 72%, transparent);
-  color: rgba(255,255,255,0.96);
+  color: rgba(255, 255, 255, 0.96);
   cursor: pointer;
 }
 
@@ -465,7 +473,9 @@ select {
   border-top: 1px solid var(--row-sep);
 }
 
-.row:hover { background: var(--row-hover); }
+.row:hover {
+  background: var(--row-hover);
+}
 .row.is-selected {
   background: color-mix(in srgb, var(--row-hover) 55%, transparent);
 }
@@ -744,7 +754,9 @@ body.list-collapsed #detailSidebar {
   padding: 0;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  transition: background 150ms ease, transform 120ms ease;
+  transition:
+    background 150ms ease,
+    transform 120ms ease;
 }
 
 .detailSocialBtn:hover,
@@ -1133,12 +1145,18 @@ body.list-collapsed #detailSidebar {
   -webkit-backdrop-filter: blur(12px);
   align-items: center;
   justify-content: center;
-  transition: box-shadow 150ms ease, transform 120ms ease;
+  transition:
+    box-shadow 150ms ease,
+    transform 120ms ease;
 }
 
 #expandPill:hover,
 #expandPill:focus-visible {
-  box-shadow: var(--shadow), inset 0 0 0 999px var(--row-hover);
+  box-shadow:
+    var(--shadow),
+    inset 0 0 0 999px var(--row-hover);
 }
 
-#expandPill.show { display: inline-flex; }
+#expandPill.show {
+  display: inline-flex;
+}

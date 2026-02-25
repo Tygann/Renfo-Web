@@ -46,6 +46,15 @@ Set in Cloudflare Worker settings:
 - `WEATHERKIT_TOKEN_TTL_SECONDS` (text, e.g. `1800`)
 - `ALLOWED_ORIGINS` (text, currently `https://*.renfo.app`)
 
+## Development commands
+
+- `npm run check`: run lint checks.
+- `npm run check:all`: run lint + prettier check.
+- `npm run lint`: lint JavaScript files.
+- `npm run lint:fix`: lint and auto-fix where possible.
+- `npm run format`: format files with Prettier.
+- `npm run format:check`: verify formatting without writing changes.
+
 ## Notes
 
 - Keep `.p8` keys out of git (already covered by `.gitignore`).

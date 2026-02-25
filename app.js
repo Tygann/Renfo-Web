@@ -17,14 +17,14 @@ import {
   getEstablishedYear,
   buildDirectionsHref,
   getSocialEntries,
-  getResourceEntries
+  getResourceEntries,
 } from "./src/lib/festival-utils.js";
 import { getWeatherForecast } from "./src/lib/weather.js";
 
 /** @typedef {import("./src/types.js").Festival} Festival */
 
 const currentYear = new Date().getFullYear();
-document.querySelectorAll(".siteYear").forEach($el => {
+document.querySelectorAll(".siteYear").forEach(($el) => {
   $el.textContent = currentYear;
 });
 
@@ -39,7 +39,7 @@ function isMapLibraryLoaded() {
 
 async function waitForMapKit() {
   if (!window.__mapKitReady) {
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       const previousInit = window.initMapKit;
       window.initMapKit = () => {
         try {
@@ -88,8 +88,8 @@ async function loadFestivals() {
   const now = new Date();
 
   return (data ?? [])
-    .filter(f => f.latitude != null && f.longitude != null)
-    .map(f => {
+    .filter((f) => f.latitude != null && f.longitude != null)
+    .map((f) => {
       const derivedStatus = getDerivedFestivalStatus(f, now);
       const daysUntilStart = getDaysUntilFestivalStart(f, now, derivedStatus);
       return {
@@ -98,14 +98,61 @@ async function loadFestivals() {
         daysUntilStart,
         lat: f.latitude,
         lng: f.longitude,
-        subtitle: `${f.city ?? ""}${f.city && f.state ? ", " : ""}${f.state ?? ""}`.trim(),
+        subtitle:
+          `${f.city ?? ""}${f.city && f.state ? ", " : ""}${f.state ?? ""}`.trim(),
         logoAssetUrl: getFestivalAssetUrl(f, "logo"),
         mapAssetUrl: getFestivalAssetUrl(f, "map"),
-        campAssetUrl: getFestivalAssetUrl(f, "camp")
+        campAssetUrl: getFestivalAssetUrl(f, "camp"),
       };
     });
 }
 
+let showUpcomingDaysInList = false;
+const SETTINGS_STORAGE_KEYS = {
+  group: "renfo.group",
+  sort: "renfo.sort",
+  showUpcomingDaysInList: "renfo.showUpcomingDaysInList",
+};
+
+function readStoredSetting(key) {
+  try {
+    return window.localStorage?.getItem(key) ?? null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function writeStoredSetting(key, value) {
+  try {
+    window.localStorage?.setItem(key, String(value));
+  } catch (_) {}
+}
+
+function getLucideIconMarkup(name) {
+  return `<i data-lucide="${name}" aria-hidden="true"></i>`;
+}
+
+function refreshLucideIcons() {
+  if (!window.lucide?.createIcons) return;
+  window.lucide.createIcons({
+    attrs: { "stroke-width": "2.1" },
+  });
+}
+
+window.addEventListener("load", refreshLucideIcons);
+
+function getSocialIconSvg(platform) {
+  if (platform === "facebook") {
+    return getLucideIconMarkup("facebook");
+  }
+  if (platform === "instagram") {
+    return getLucideIconMarkup("instagram");
+  }
+  if (platform === "youtube") {
+    return getLucideIconMarkup("youtube");
+  }
+  return getLucideIconMarkup("twitter");
+}
 
 // ---------- UI elements ----------
 const $search = document.getElementById("search");
@@ -129,25 +176,37 @@ const $sortSummary = document.getElementById("sortSummary");
 const $daysUntilToggleRow = document.getElementById("daysUntilToggleRow");
 const $daysUntilToggleIcon = document.getElementById("daysUntilToggleIcon");
 const $daysUntilToggleTitle = document.getElementById("daysUntilToggleTitle");
-const $groupChoiceButtons = Array.from(document.querySelectorAll('.optionChoice[data-select="group"]'));
-const $sortChoiceButtons = Array.from(document.querySelectorAll('.optionChoice[data-select="sort"]'));
+const $groupChoiceButtons = Array.from(
+  document.querySelectorAll('.optionChoice[data-select="group"]'),
+);
+const $sortChoiceButtons = Array.from(
+  document.querySelectorAll('.optionChoice[data-select="sort"]'),
+);
 const $detailSidebar = document.getElementById("detailSidebar");
 const $detailCloseBtn = document.getElementById("detailCloseBtn");
 const $detailHeroLogo = document.getElementById("detailHeroLogo");
 const $detailTitle = document.getElementById("detailTitle");
 const $detailMetaRow = document.getElementById("detailMetaRow");
 const $detailMetaStatusItem = document.getElementById("detailMetaStatusItem");
-const $detailMetaEstablishedItem = document.getElementById("detailMetaEstablishedItem");
+const $detailMetaEstablishedItem = document.getElementById(
+  "detailMetaEstablishedItem",
+);
 const $detailMetaStatusValue = document.getElementById("detailMetaStatusValue");
-const $detailMetaEstablishedValue = document.getElementById("detailMetaEstablishedValue");
-const $detailMetaItems = Array.from($detailMetaRow.querySelectorAll(".detailMetaItem"));
+const $detailMetaEstablishedValue = document.getElementById(
+  "detailMetaEstablishedValue",
+);
+const $detailMetaItems = Array.from(
+  $detailMetaRow.querySelectorAll(".detailMetaItem"),
+);
 const $detailSocialCard = document.getElementById("detailSocialCard");
 const $detailSocials = document.getElementById("detailSocials");
 const $detailLastUpdated = document.getElementById("detailLastUpdated");
 const $detailDescriptionCard = document.getElementById("detailDescriptionCard");
 const $detailDesc = document.getElementById("detailDesc");
 const $detailActionCall = document.getElementById("detailActionCall");
-const $detailActionDirections = document.getElementById("detailActionDirections");
+const $detailActionDirections = document.getElementById(
+  "detailActionDirections",
+);
 const $detailActionWebsite = document.getElementById("detailActionWebsite");
 const $detailDateValue = document.getElementById("detailDateValue");
 const $detailTimeValue = document.getElementById("detailTimeValue");
@@ -179,13 +238,20 @@ function syncBrowserBottomInset() {
   let bottomInset = 0;
   if (vv) {
     const innerDelta = Math.round((window.innerHeight || 0) - vv.height);
-    const clientDelta = Math.round((document.documentElement?.clientHeight || 0) - vv.height);
-    const offsetDelta = Math.round((window.innerHeight || 0) - (vv.height + vv.offsetTop));
+    const clientDelta = Math.round(
+      (document.documentElement?.clientHeight || 0) - vv.height,
+    );
+    const offsetDelta = Math.round(
+      (window.innerHeight || 0) - (vv.height + vv.offsetTop),
+    );
     bottomInset = Math.max(0, innerDelta, clientDelta, offsetDelta);
     // Ignore on-screen keyboard insets; this offset is for browser chrome overlap.
     if (bottomInset > 140) bottomInset = 0;
   }
-  document.documentElement.style.setProperty("--browser-bottom-inset", `${bottomInset}px`);
+  document.documentElement.style.setProperty(
+    "--browser-bottom-inset",
+    `${bottomInset}px`,
+  );
 }
 
 function getSelectLabel(selectEl) {
@@ -195,8 +261,12 @@ function getSelectLabel(selectEl) {
 function syncOptionsMenuState() {
   $groupSummary.textContent = getSelectLabel($group);
   $sortSummary.textContent = getSelectLabel($sort);
-  $daysUntilToggleTitle.textContent = showUpcomingDaysInList ? "Hide Indicator" : "Show Indicator";
-  $daysUntilToggleIcon.innerHTML = getLucideIconMarkup(showUpcomingDaysInList ? "eye-off" : "eye");
+  $daysUntilToggleTitle.textContent = showUpcomingDaysInList
+    ? "Hide Indicator"
+    : "Show Indicator";
+  $daysUntilToggleIcon.innerHTML = getLucideIconMarkup(
+    showUpcomingDaysInList ? "eye-off" : "eye",
+  );
   refreshLucideIcons();
 
   for (const button of $groupChoiceButtons) {
@@ -215,7 +285,7 @@ function syncOptionsMenuDirection() {
   }
 
   const sheetTop = $sidebar.getBoundingClientRect().top;
-  const openDown = sheetTop <= (window.innerHeight * 0.5);
+  const openDown = sheetTop <= window.innerHeight * 0.5;
   $optionsMenu.classList.toggle("options-menu-down", openDown);
   $optionsMenu.classList.toggle("options-menu-up", !openDown);
 }
@@ -224,7 +294,8 @@ function positionOptionsMenu() {
   const headerRect = $sidebarHeader.getBoundingClientRect();
   const btnRect = $optionsBtn.getBoundingClientRect();
   const right = Math.max(8, Math.round(headerRect.right - btnRect.right));
-  const openUp = isMobileViewport() && $optionsMenu.classList.contains("options-menu-up");
+  const openUp =
+    isMobileViewport() && $optionsMenu.classList.contains("options-menu-up");
   const top = openUp
     ? Math.round(btnRect.bottom - headerRect.top)
     : Math.round(btnRect.top - headerRect.top);
@@ -286,16 +357,24 @@ function setSelectValue(selectEl, value) {
 
 function applyStoredUiSettings() {
   const storedGroup = readStoredSetting(SETTINGS_STORAGE_KEYS.group);
-  if (storedGroup && Array.from($group.options).some(option => option.value === storedGroup)) {
+  if (
+    storedGroup &&
+    Array.from($group.options).some((option) => option.value === storedGroup)
+  ) {
     $group.value = storedGroup;
   }
 
   const storedSort = readStoredSetting(SETTINGS_STORAGE_KEYS.sort);
-  if (storedSort && Array.from($sort.options).some(option => option.value === storedSort)) {
+  if (
+    storedSort &&
+    Array.from($sort.options).some((option) => option.value === storedSort)
+  ) {
     $sort.value = storedSort;
   }
 
-  const storedShowUpcomingDays = readStoredSetting(SETTINGS_STORAGE_KEYS.showUpcomingDaysInList);
+  const storedShowUpcomingDays = readStoredSetting(
+    SETTINGS_STORAGE_KEYS.showUpcomingDaysInList,
+  );
   if (storedShowUpcomingDays != null) {
     showUpcomingDaysInList = storedShowUpcomingDays === "true";
   }
@@ -310,11 +389,14 @@ function getMobileSheetMetrics() {
   const headerHeight = $sidebarHeader.getBoundingClientRect().height;
   const peekVisible = Math.max(96, headerHeight - 6);
   const maxOffset = Math.max(0, sidebarHeight - peekVisible);
-  document.documentElement.style.setProperty("--mobile-sheet-peek-visible", `${peekVisible}px`);
+  document.documentElement.style.setProperty(
+    "--mobile-sheet-peek-visible",
+    `${peekVisible}px`,
+  );
   return {
     full: 0,
     mid: Math.round(maxOffset * 0.44),
-    peek: maxOffset
+    peek: maxOffset,
   };
 }
 
@@ -334,7 +416,10 @@ function applyMobileSheetOffset(nextOffset, options = {}) {
 }
 
 function syncMobileSheetMetaVisibility() {
-  const show = isMobileViewport() && mobileSheetState === "peek" && !document.body.classList.contains("mobile-detail-open");
+  const show =
+    isMobileViewport() &&
+    mobileSheetState === "peek" &&
+    !document.body.classList.contains("mobile-detail-open");
   document.body.classList.toggle("mobile-sheet-peek", show);
 }
 
@@ -374,7 +459,8 @@ function syncMobileModeClasses() {
     $sidebar.style.removeProperty("--mobile-list-offset");
     syncOptionsMenuDirection();
     positionOptionsMenu();
-    if (typeof syncMapChromeForViewport === "function") syncMapChromeForViewport();
+    if (typeof syncMapChromeForViewport === "function")
+      syncMapChromeForViewport();
     return;
   }
   setMobileSheetState(mobileSheetState, { animate: false });
@@ -382,7 +468,8 @@ function syncMobileModeClasses() {
     syncOptionsMenuDirection();
     positionOptionsMenu();
   }
-  if (typeof syncMapChromeForViewport === "function") syncMapChromeForViewport();
+  if (typeof syncMapChromeForViewport === "function")
+    syncMapChromeForViewport();
 }
 
 function syncMobileDetailSheetState(isOpen) {
@@ -446,7 +533,7 @@ function handleMobileSheetPointerDown(event) {
   mobileSheetDrag = {
     pointerId: event.pointerId,
     startY: event.clientY,
-    startOffset: mobileSheetOffset
+    startOffset: mobileSheetOffset,
   };
   document.body.classList.remove("mobile-sheet-peek");
   $sidebarHeader.setPointerCapture?.(event.pointerId);
@@ -457,7 +544,9 @@ function handleMobileSheetPointerMove(event) {
   if (!mobileSheetDrag) return;
   if (event.pointerId !== mobileSheetDrag.pointerId) return;
   const delta = event.clientY - mobileSheetDrag.startY;
-  applyMobileSheetOffset(mobileSheetDrag.startOffset + delta, { animate: false });
+  applyMobileSheetOffset(mobileSheetDrag.startOffset + delta, {
+    animate: false,
+  });
   event.preventDefault();
 }
 
@@ -470,7 +559,9 @@ function handleMobileSheetPointerUp(event) {
 
 $sidebarGrabber.addEventListener("pointerdown", handleMobileSheetPointerDown);
 $sidebarHeader.addEventListener("pointerdown", handleMobileSheetPointerDown);
-window.addEventListener("pointermove", handleMobileSheetPointerMove, { passive: false });
+window.addEventListener("pointermove", handleMobileSheetPointerMove, {
+  passive: false,
+});
 window.addEventListener("pointerup", handleMobileSheetPointerUp);
 window.addEventListener("pointercancel", handleMobileSheetPointerUp);
 if (mobileMedia.addEventListener) {
@@ -541,7 +632,10 @@ function renderListGrouped(items, groupMode, onSelect) {
       const row = document.createElement("div");
       row.className = "row";
       row.dataset.id = String(f.id);
-      if (selectedFestivalId != null && String(f.id) === String(selectedFestivalId)) {
+      if (
+        selectedFestivalId != null &&
+        String(f.id) === String(selectedFestivalId)
+      ) {
         row.classList.add("is-selected");
       }
 
@@ -566,7 +660,10 @@ function renderListGrouped(items, groupMode, onSelect) {
         const daysWrap = document.createElement("div");
         daysWrap.className = "rowDaysUntil";
         const dayLabel = indicatorData.daysUntilStart === 1 ? "day" : "days";
-        daysWrap.setAttribute("aria-label", `${indicatorData.daysUntilStart} ${dayLabel} until start`);
+        daysWrap.setAttribute(
+          "aria-label",
+          `${indicatorData.daysUntilStart} ${dayLabel} until start`,
+        );
 
         const daysValue = document.createElement("span");
         daysValue.className = "rowDaysUntilValue";
@@ -607,7 +704,6 @@ function renderListGrouped(items, groupMode, onSelect) {
   refreshLucideIcons();
 }
 
-
 function setDetailActionLink(el, href, openInNewTab = false) {
   if (!href) {
     el.removeAttribute("href");
@@ -629,8 +725,6 @@ function setDetailActionLink(el, href, openInNewTab = false) {
     el.removeAttribute("rel");
   }
 }
-
-
 
 function renderWeatherStatus(message) {
   const text = String(message ?? "").trim();
@@ -693,15 +787,21 @@ async function renderDetailWeather(f, renderVersion) {
 
     $detailWeatherRows.innerHTML = "";
     if (error?.code === "missing_token") {
-      renderWeatherStatus("Weather unavailable. Set WEATHER_API_URL (recommended) or WEATHERKIT_TOKEN in config.js.");
+      renderWeatherStatus(
+        "Weather unavailable. Set WEATHER_API_URL (recommended) or WEATHERKIT_TOKEN in config.js.",
+      );
       return;
     }
 
     if (error?.status === 401 || error?.status === 403) {
       if (error?.source === "proxy") {
-        renderWeatherStatus("Weather unavailable. Weather proxy is not authorized with WeatherKit.");
+        renderWeatherStatus(
+          "Weather unavailable. Weather proxy is not authorized with WeatherKit.",
+        );
       } else {
-        renderWeatherStatus("Weather unavailable. WeatherKit token is not authorized for this origin.");
+        renderWeatherStatus(
+          "Weather unavailable. WeatherKit token is not authorized for this origin.",
+        );
       }
       return;
     }
@@ -728,12 +828,12 @@ function getResourceIconSvg(type) {
   return getLucideIconMarkup("map");
 }
 
-
 function checkImageAssetExists(url) {
   if (!url) return Promise.resolve(false);
-  if (resourceAssetExistsCache.has(url)) return resourceAssetExistsCache.get(url);
+  if (resourceAssetExistsCache.has(url))
+    return resourceAssetExistsCache.get(url);
 
-  const probe = new Promise(resolve => {
+  const probe = new Promise((resolve) => {
     const img = new Image();
     img.onload = () => resolve(true);
     img.onerror = () => resolve(false);
@@ -753,7 +853,11 @@ async function renderDetailResources(f, renderVersion) {
   }
 
   const exists = await Promise.all(
-    resourceEntries.map(item => (item.probeImage ? checkImageAssetExists(item.href) : Promise.resolve(true)))
+    resourceEntries.map((item) =>
+      item.probeImage
+        ? checkImageAssetExists(item.href)
+        : Promise.resolve(true),
+    ),
   );
   if (renderVersion !== detailRenderVersion) return;
 
@@ -838,7 +942,7 @@ function updateDetailPanel(f) {
     if (!valueEl) continue;
     item.hidden = !String(valueEl.textContent ?? "").trim();
   }
-  $detailMetaRow.hidden = $detailMetaItems.every(item => item.hidden);
+  $detailMetaRow.hidden = $detailMetaItems.every((item) => item.hidden);
 
   const dateRange = formatDateRange(f);
   $detailDateValue.textContent = dateRange;
@@ -924,12 +1028,14 @@ function updateDetailPanel(f) {
 // ---------- Map ----------
 function makeMarker(f) {
   const coord = new mapkit.Coordinate(f.lat, f.lng);
-  const statusText = String(f?.status ?? "").trim().toLowerCase();
+  const statusText = String(f?.status ?? "")
+    .trim()
+    .toLowerCase();
   const isActiveFestival = statusText === "active";
   const crownGlyphImage = {
     1: "/crown.png",
     2: "/crown.png",
-    3: "/crown.png"
+    3: "/crown.png",
   };
 
   const marker = new mapkit.MarkerAnnotation(coord, {
@@ -940,9 +1046,9 @@ function makeMarker(f) {
     ...(isActiveFestival
       ? {
           color: "#34c759",
-          selectedColor: "#34c759"
+          selectedColor: "#34c759",
         }
-      : {})
+      : {}),
   });
 
   // clustering
@@ -978,19 +1084,21 @@ async function main() {
   const map = new mapkit.Map("map", {
     showsCompass: getMapFeatureVisibility("Visible"),
     showsZoomControl: true,
-    showsUserLocationControl: false
+    showsUserLocationControl: false,
   });
 
   const mapTypes = mapkit?.Map?.MapTypes ?? null;
   const mapTypeByStyle = {
     standard: mapTypes?.Standard ?? "standard",
     hybrid: mapTypes?.Hybrid ?? "hybrid",
-    satellite: mapTypes?.Satellite ?? "satellite"
+    satellite: mapTypes?.Satellite ?? "satellite",
   };
 
   function getMapStyleForType(type) {
-    if (type === mapTypeByStyle.hybrid || normalize(type) === "hybrid") return "hybrid";
-    if (type === mapTypeByStyle.satellite || normalize(type) === "satellite") return "satellite";
+    if (type === mapTypeByStyle.hybrid || normalize(type) === "hybrid")
+      return "hybrid";
+    if (type === mapTypeByStyle.satellite || normalize(type) === "satellite")
+      return "satellite";
     return "standard";
   }
 
@@ -1022,7 +1130,10 @@ async function main() {
     if (!$mobileUserLocationBtn) return;
     const tracking = !!map.tracksUserLocation;
     $mobileUserLocationBtn.innerHTML = getMobileLocationIconMarkup(tracking);
-    $mobileUserLocationBtn.setAttribute("aria-pressed", tracking ? "true" : "false");
+    $mobileUserLocationBtn.setAttribute(
+      "aria-pressed",
+      tracking ? "true" : "false",
+    );
   }
 
   syncMapChromeForViewport = () => {
@@ -1050,7 +1161,10 @@ async function main() {
   if ($mobileMapStyleBtn) {
     $mobileMapStyleBtn.addEventListener("click", () => {
       const currentStyle = getMapStyleForType(map.mapType);
-      map.mapType = currentStyle === "hybrid" ? mapTypeByStyle.standard : mapTypeByStyle.hybrid;
+      map.mapType =
+        currentStyle === "hybrid"
+          ? mapTypeByStyle.standard
+          : mapTypeByStyle.hybrid;
       syncMobileMapStyleButtonState();
     });
   }
@@ -1080,7 +1194,10 @@ async function main() {
   }
 
   map.addAnnotations(annotations);
-  map.showItems(annotations, { animate: false, padding: getMapPadding(60, 60, 60, 60) });
+  map.showItems(annotations, {
+    animate: false,
+    padding: getMapPadding(60, 60, 60, 60),
+  });
 
   let selectedAnnotation = null;
   let pendingMapSelectionTimer = null;
@@ -1127,7 +1244,7 @@ async function main() {
     if (zoomToFestival) {
       map.showItems([ann], {
         animate: true,
-        padding: getMapPadding(90, 90, 90, 90)
+        padding: getMapPadding(90, 90, 90, 90),
       });
     }
 
@@ -1157,7 +1274,10 @@ async function main() {
     if (!a) return;
 
     if (Array.isArray(a.memberAnnotations) && a.memberAnnotations.length > 1) {
-      map.showItems(a.memberAnnotations, { animate: true, padding: getMapPadding(60, 60, 60, 60) });
+      map.showItems(a.memberAnnotations, {
+        animate: true,
+        padding: getMapPadding(60, 60, 60, 60),
+      });
       map.deselectAnnotation(a);
       return;
     }
@@ -1182,8 +1302,9 @@ async function main() {
 
     const filtered = !q
       ? allFestivals
-      : allFestivals.filter(f => {
-          const hay = `${f.name ?? ""} ${f.city ?? ""} ${f.state ?? ""} ${f.stateName ?? ""} ${f.status ?? ""}`.toLowerCase();
+      : allFestivals.filter((f) => {
+          const hay =
+            `${f.name ?? ""} ${f.city ?? ""} ${f.state ?? ""} ${f.stateName ?? ""} ${f.status ?? ""}`.toLowerCase();
           return hay.includes(q);
         });
 
@@ -1223,15 +1344,17 @@ async function main() {
   });
   $daysUntilToggleRow.addEventListener("click", () => {
     showUpcomingDaysInList = !showUpcomingDaysInList;
-    writeStoredSetting(SETTINGS_STORAGE_KEYS.showUpcomingDaysInList, showUpcomingDaysInList);
+    writeStoredSetting(
+      SETTINGS_STORAGE_KEYS.showUpcomingDaysInList,
+      showUpcomingDaysInList,
+    );
     syncOptionsMenuState();
     closeOptionsMenu();
     rerender();
   });
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(err);
-  document.body.innerHTML =
-    `<pre style="padding:16px;white-space:pre-wrap">Error:\n${err?.message || err}</pre>`;
+  document.body.innerHTML = `<pre style="padding:16px;white-space:pre-wrap">Error:\n${err?.message || err}</pre>`;
 });

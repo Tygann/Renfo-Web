@@ -2,18 +2,32 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1c1c1e" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#f2f2f7"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#1c1c1e"
+    />
     <meta name="apple-itunes-app" content="app-id=6502414968" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <meta name="apple-mobile-web-app-title" content="Renfo" />
     <title>Renfo - Renaissance Festival Map</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <link rel="stylesheet" href="/styles.css" />
     <!-- MapKit JS -->
@@ -36,10 +50,13 @@
       // Inject token at runtime
       document.currentScript.previousElementSibling.setAttribute(
         "data-token",
-        window.RENFO_CONFIG.MAPKIT_TOKEN
+        window.RENFO_CONFIG.MAPKIT_TOKEN,
       );
     </script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script
+      src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"
+      defer
+    ></script>
   </head>
 
   <body>
@@ -54,7 +71,12 @@
         <div id="sidebarGrabber" aria-hidden="true"></div>
         <div id="brandRow">
           <div id="brandLeft">
-            <img id="brandLogo" src="/renfo-logo.png" alt="" aria-hidden="true" />
+            <img
+              id="brandLogo"
+              src="/renfo-logo.png"
+              alt=""
+              aria-hidden="true"
+            />
 
             <div id="brandTitle">
               <h1>Renfo</h1>
@@ -62,13 +84,24 @@
           </div>
 
           <div id="headerActions">
-            <button id="optionsBtn" type="button" class="iconButton" aria-label="Display grouping and sorting options" title="Options">
+            <button
+              id="optionsBtn"
+              type="button"
+              class="iconButton"
+              aria-label="Display grouping and sorting options"
+              title="Options"
+            >
               <span class="icon" aria-hidden="true">
                 <i data-lucide="more-horizontal"></i>
               </span>
             </button>
 
-            <button id="collapseBtn" class="iconButton" aria-label="Collapse sidebar" title="Collapse">
+            <button
+              id="collapseBtn"
+              class="iconButton"
+              aria-label="Collapse sidebar"
+              title="Collapse"
+            >
               <span class="icon" aria-hidden="true">
                 <i data-lucide="panel-left-close"></i>
               </span>
@@ -77,7 +110,13 @@
         </div>
 
         <div id="optionsMenu" hidden>
-          <button id="groupMenuRow" class="optionsRow" type="button" aria-label="Group by setting" aria-expanded="false">
+          <button
+            id="groupMenuRow"
+            class="optionsRow"
+            type="button"
+            aria-label="Group by setting"
+            aria-expanded="false"
+          >
             <span class="optionsIcon" aria-hidden="true">
               <i data-lucide="layout-list"></i>
             </span>
@@ -90,12 +129,39 @@
             </span>
           </button>
           <div id="groupChoices" class="optionsChoices" hidden>
-            <button type="button" class="optionChoice" data-select="group" data-value="none">None</button>
-            <button type="button" class="optionChoice" data-select="group" data-value="state">State</button>
-            <button type="button" class="optionChoice" data-select="group" data-value="status">Status</button>
+            <button
+              type="button"
+              class="optionChoice"
+              data-select="group"
+              data-value="none"
+            >
+              None
+            </button>
+            <button
+              type="button"
+              class="optionChoice"
+              data-select="group"
+              data-value="state"
+            >
+              State
+            </button>
+            <button
+              type="button"
+              class="optionChoice"
+              data-select="group"
+              data-value="status"
+            >
+              Status
+            </button>
           </div>
 
-          <button id="sortMenuRow" class="optionsRow" type="button" aria-label="Sort by setting" aria-expanded="false">
+          <button
+            id="sortMenuRow"
+            class="optionsRow"
+            type="button"
+            aria-label="Sort by setting"
+            aria-expanded="false"
+          >
             <span class="optionsIcon" aria-hidden="true">
               <i data-lucide="arrow-up-down"></i>
             </span>
@@ -108,17 +174,42 @@
             </span>
           </button>
           <div id="sortChoices" class="optionsChoices" hidden>
-            <button type="button" class="optionChoice" data-select="sort" data-value="name">Name</button>
-            <button type="button" class="optionChoice" data-select="sort" data-value="startDate">Start Date</button>
+            <button
+              type="button"
+              class="optionChoice"
+              data-select="sort"
+              data-value="name"
+            >
+              Name
+            </button>
+            <button
+              type="button"
+              class="optionChoice"
+              data-select="sort"
+              data-value="startDate"
+            >
+              Start Date
+            </button>
           </div>
 
           <div class="optionsChoices">
-            <button id="daysUntilToggleRow" class="optionsRow" type="button" aria-label="Toggle upcoming days in list">
-              <span id="daysUntilToggleIcon" class="optionsIcon" aria-hidden="true">
+            <button
+              id="daysUntilToggleRow"
+              class="optionsRow"
+              type="button"
+              aria-label="Toggle upcoming days in list"
+            >
+              <span
+                id="daysUntilToggleIcon"
+                class="optionsIcon"
+                aria-hidden="true"
+              >
                 <i data-lucide="eye"></i>
               </span>
               <span class="optionsText">
-                <p id="daysUntilToggleTitle" class="optionsTitle">Hide Indicator</p>
+                <p id="daysUntilToggleTitle" class="optionsTitle">
+                  Hide Indicator
+                </p>
               </span>
             </button>
           </div>
@@ -128,8 +219,19 @@
           <span id="searchIcon" aria-hidden="true">
             <i data-lucide="search"></i>
           </span>
-          <input id="search" type="search" placeholder="Search" autocomplete="off" />
-          <button id="searchClearBtn" type="button" aria-label="Clear search" title="Clear search" hidden>
+          <input
+            id="search"
+            type="search"
+            placeholder="Search"
+            autocomplete="off"
+          />
+          <button
+            id="searchClearBtn"
+            type="button"
+            aria-label="Clear search"
+            title="Clear search"
+            hidden
+          >
             <i data-lucide="x" aria-hidden="true"></i>
           </button>
         </div>
@@ -152,7 +254,6 @@
             </select>
           </div>
         </div>
-
       </div>
 
       <div id="list"></div>
@@ -160,7 +261,13 @@
 
     <div id="detailSidebar" hidden>
       <div id="detailHeader">
-        <button id="detailCloseBtn" type="button" class="iconButton" aria-label="Close festival details" title="Close details">
+        <button
+          id="detailCloseBtn"
+          type="button"
+          class="iconButton"
+          aria-label="Close festival details"
+          title="Close details"
+        >
           <span class="icon" aria-hidden="true">
             <i data-lucide="x"></i>
           </span>
@@ -169,25 +276,45 @@
       <div id="detailBody">
         <section id="detailHero">
           <div id="detailHeroLogoWrap">
-            <img id="detailHeroLogo" src="/renfo-logo.png" alt="" aria-hidden="true" />
+            <img
+              id="detailHeroLogo"
+              src="/renfo-logo.png"
+              alt=""
+              aria-hidden="true"
+            />
           </div>
           <p id="detailTitle"></p>
         </section>
 
         <section id="detailActions">
-          <a id="detailActionDirections" class="detailAction" href="#" aria-label="Get directions">
+          <a
+            id="detailActionDirections"
+            class="detailAction"
+            href="#"
+            aria-label="Get directions"
+          >
             <span class="detailActionIcon" aria-hidden="true">
               <i data-lucide="navigation"></i>
             </span>
             <span class="detailActionLabel">Directions</span>
           </a>
-          <a id="detailActionCall" class="detailAction" href="#" aria-label="Call festival">
+          <a
+            id="detailActionCall"
+            class="detailAction"
+            href="#"
+            aria-label="Call festival"
+          >
             <span class="detailActionIcon" aria-hidden="true">
               <i data-lucide="phone"></i>
             </span>
             <span class="detailActionLabel">Call</span>
           </a>
-          <a id="detailActionWebsite" class="detailAction" href="#" aria-label="Open website">
+          <a
+            id="detailActionWebsite"
+            class="detailAction"
+            href="#"
+            aria-label="Open website"
+          >
             <span class="detailActionIcon" aria-hidden="true">
               <i data-lucide="compass"></i>
             </span>
@@ -234,7 +361,12 @@
             <div id="detailWeatherRows"></div>
             <p class="detailWeatherAttribution">
               Weather data by Apple Weather.
-              <a href="https://weatherkit.apple.com/legal-attribution.html" target="_blank" rel="noopener noreferrer">Data sources</a>
+              <a
+                href="https://weatherkit.apple.com/legal-attribution.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Data sources</a
+              >
             </p>
           </section>
         </div>
@@ -246,7 +378,13 @@
               <p id="detailAddressLine2" class="detailAddressLine"></p>
               <p id="detailAddressLine3" class="detailAddressLine"></p>
             </div>
-            <a id="detailAddressOpenBtn" class="iconButton detailAddressBtn" href="#" aria-label="Open address in maps" title="Open in maps">
+            <a
+              id="detailAddressOpenBtn"
+              class="iconButton detailAddressBtn"
+              href="#"
+              aria-label="Open address in maps"
+              title="Open in maps"
+            >
               <span class="icon" aria-hidden="true">
                 <i data-lucide="corner-up-right"></i>
               </span>
@@ -273,16 +411,27 @@
         </section>
 
         <p id="detailLastUpdated" hidden></p>
-
       </div>
     </div>
 
     <div id="map"></div>
     <div id="mobileMapControls" aria-label="Map controls" hidden>
-      <button id="mobileMapStyleBtn" class="mobileMapControlBtn" type="button" aria-label="Toggle standard and hybrid map style" title="Map style">
+      <button
+        id="mobileMapStyleBtn"
+        class="mobileMapControlBtn"
+        type="button"
+        aria-label="Toggle standard and hybrid map style"
+        title="Map style"
+      >
         <i data-lucide="map" aria-hidden="true"></i>
       </button>
-      <button id="mobileUserLocationBtn" class="mobileMapControlBtn" type="button" aria-label="Toggle user location tracking" title="Location">
+      <button
+        id="mobileUserLocationBtn"
+        class="mobileMapControlBtn"
+        type="button"
+        aria-label="Toggle user location tracking"
+        title="Location"
+      >
         <i data-lucide="navigation" aria-hidden="true"></i>
       </button>
     </div>
@@ -291,6 +440,12 @@
     </div>
 
     <script type="module" src="/app.js"></script>
-    <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"11660f41b0ec4495bfda86fd385e9f15","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+    <script
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
+      integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
+      data-cf-beacon='{"version":"2024.11.0","token":"11660f41b0ec4495bfda86fd385e9f15","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}'
+      crossorigin="anonymous"
+    ></script>
   </body>
 </html>
