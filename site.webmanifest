@@ -1,0 +1,15 @@
+{
+  "name": "Renfo",
+  "short_name": "Renfo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/assets/images/renfo-app-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}
