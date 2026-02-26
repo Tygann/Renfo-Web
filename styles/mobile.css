@@ -230,6 +230,67 @@
     padding-bottom: 0;
   }
 
+  #detailBody {
+    padding: 12px 18px 18px 18px;
+    gap: 18px;
+  }
+
+  #detailHeroLogoWrap {
+    width: 168px;
+    height: 168px;
+  }
+
+  #detailTitle {
+    margin-top: 14px;
+  }
+
+  #detailActions {
+    gap: 12px;
+  }
+
+  .detailMetaItem {
+    padding: 12px 15px 13px 15px;
+  }
+
+  .detailMetaItem:not([hidden]) + .detailMetaItem:not([hidden])::before {
+    top: 9px;
+    bottom: 9px;
+  }
+
+  .detailSectionHeader {
+    padding: 12px 11px 10px 11px;
+  }
+
+  .detailCard {
+    border-radius: 22px;
+  }
+
+  .detailInfoRow {
+    gap: 12px;
+    padding: 13px 14px;
+  }
+
+  .detailAddressPanel {
+    padding: 13px 14px;
+  }
+
+  .detailDescriptionPanel {
+    padding: 13px 14px;
+  }
+
+  #detailWeatherStatus {
+    padding: 12px 14px;
+  }
+
+  .detailWeatherRow {
+    gap: 12px;
+    padding: 13px 14px;
+  }
+
+  .detailResourceBtn {
+    padding: 13px 14px;
+  }
+
   #sidebar.options-open {
     overflow: visible;
   }

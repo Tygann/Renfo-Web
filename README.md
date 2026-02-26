@@ -78,3 +78,9 @@ Set in Cloudflare Worker settings:
 
 - Keep `.p8` keys out of git (already covered by `.gitignore`).
 - If you rename worker/routes in Cloudflare UI, keep `wrangler.jsonc` aligned.
+
+## Cache behavior (Cloudflare)
+
+- `_headers` defines caching for static site files when deployed on Cloudflare Pages.
+- HTML/JS/CSS/config/data/manifest are set to `max-age=0, must-revalidate` so clients (including iOS Safari) check for updates quickly.
+- `/assets/*` is cached for 7 days to keep image loads fast.

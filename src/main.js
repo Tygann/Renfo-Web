@@ -338,7 +338,11 @@ const $sortChoiceButtons = Array.from(
   document.querySelectorAll('.optionChoice[data-select="sort"]'),
 );
 const $detailSidebar = document.getElementById("detailSidebar");
+const $detailHeader = document.getElementById("detailHeader");
+const $detailHeaderLogo = document.getElementById("detailHeaderLogo");
+const $detailHeaderTitle = document.getElementById("detailHeaderTitle");
 const $detailCloseBtn = document.getElementById("detailCloseBtn");
+const $detailBody = document.getElementById("detailBody");
 const $detailHeroLogo = document.getElementById("detailHeroLogo");
 const $detailTitle = document.getElementById("detailTitle");
 const $detailMetaRow = document.getElementById("detailMetaRow");
@@ -396,6 +400,7 @@ let mobileSheetState = "peek";
 let mobileSheetOffset = 0;
 let mobileSheetDrag = null;
 let syncMapChromeForViewport = null;
+let detailHeaderTitleSyncRaf = null;
 
 function syncBrowserBottomInset() {
   const vv = window.visualViewport;
@@ -420,6 +425,37 @@ function syncBrowserBottomInset() {
 
 function getSelectLabel(selectEl) {
   return selectEl.options[selectEl.selectedIndex]?.textContent ?? "";
+}
+
+function setDetailHeaderTitleProgress(progress) {
+  const clamped = Math.min(1, Math.max(0, progress));
+  $detailSidebar.style.setProperty(
+    "--detail-header-title-progress",
+    clamped.toFixed(3),
+  );
+}
+
+function syncDetailHeaderTitleProgress() {
+  if ($detailSidebar.hidden) {
+    setDetailHeaderTitleProgress(0);
+    return;
+  }
+
+  const headerRect = $detailHeader.getBoundingClientRect();
+  const titleRect = $detailTitle.getBoundingClientRect();
+  const fadeStart = 18;
+  const fadeDistance = 44;
+  const progress =
+    (headerRect.bottom + fadeStart - titleRect.bottom) / fadeDistance;
+  setDetailHeaderTitleProgress(progress);
+}
+
+function queueDetailHeaderTitleSync() {
+  if (detailHeaderTitleSyncRaf != null) return;
+  detailHeaderTitleSyncRaf = requestAnimationFrame(() => {
+    detailHeaderTitleSyncRaf = null;
+    syncDetailHeaderTitleProgress();
+  });
 }
 
 function syncOptionsMenuState() {
@@ -575,15 +611,16 @@ function isMobileViewport() {
 function getMobileSheetMetrics() {
   const sidebarHeight = $sidebar.getBoundingClientRect().height;
   const headerHeight = $sidebarHeader.getBoundingClientRect().height;
-  const peekVisible = Math.max(96, headerHeight - 6);
+  const peekVisible = Math.max(96, headerHeight);
   const maxOffset = Math.max(0, sidebarHeight - peekVisible);
+  const midOffsetRatio = 0.66;
   document.documentElement.style.setProperty(
     "--mobile-sheet-peek-visible",
     `${peekVisible}px`,
   );
   return {
     full: 0,
-    mid: Math.round(maxOffset * 0.44),
+    mid: Math.round(maxOffset * midOffsetRatio),
     peek: maxOffset,
   };
 }
@@ -619,6 +656,7 @@ function setMobileSheetState(nextState, options = {}) {
   mobileSheetState = nextState;
   applyMobileSheetOffset(target, { animate });
   syncMobileSheetMetaVisibility();
+  if (typeof syncMapChromeForViewport === "function") syncMapChromeForViewport();
 }
 
 function snapMobileSheetToNearest() {
@@ -656,8 +694,6 @@ function syncMobileModeClasses() {
     syncOptionsMenuDirection();
     positionOptionsMenu();
   }
-  if (typeof syncMapChromeForViewport === "function")
-    syncMapChromeForViewport();
 }
 
 function syncMobileDetailSheetState(isOpen) {
@@ -669,6 +705,8 @@ function syncMobileDetailSheetState(isOpen) {
   if (isOpen) {
     document.body.classList.add("mobile-detail-open");
     syncMobileSheetMetaVisibility();
+    if (typeof syncMapChromeForViewport === "function")
+      syncMapChromeForViewport();
     return;
   }
 
@@ -676,6 +714,8 @@ function syncMobileDetailSheetState(isOpen) {
   $sidebar.style.transition = "none";
   document.body.classList.remove("mobile-detail-open");
   syncMobileSheetMetaVisibility();
+  if (typeof syncMapChromeForViewport === "function")
+    syncMapChromeForViewport();
   requestAnimationFrame(() => {
     $sidebar.style.removeProperty("transition");
   });
@@ -728,6 +768,11 @@ $searchClearBtn.addEventListener("click", () => {
   $search.dispatchEvent(new Event("input", { bubbles: true }));
   $search.focus();
 });
+$detailBody.addEventListener("scroll", queueDetailHeaderTitleSync, {
+  passive: true,
+});
+window.addEventListener("resize", queueDetailHeaderTitleSync);
+
 function handleMobileSheetPointerDown(event) {
   if (!isMobileViewport()) return;
   if (document.body.classList.contains("mobile-detail-open")) return;
@@ -1153,6 +1198,8 @@ function updateDetailPanel(f) {
     for (const item of $detailMetaItems) {
       item.hidden = true;
     }
+    $detailHeaderTitle.textContent = "";
+    setDetailHeaderTitleProgress(0);
     $detailMetaRow.hidden = true;
     $detailSidebar.hidden = true;
     syncMobileDetailSheetState(false);
@@ -1160,7 +1207,10 @@ function updateDetailPanel(f) {
   }
 
   setImageWithFallback($detailHeroLogo, f.logoAssetUrl);
-  $detailTitle.textContent = f.name ?? "Untitled";
+  setImageWithFallback($detailHeaderLogo, f.logoAssetUrl);
+  const detailTitleText = f.name ?? "Untitled";
+  $detailTitle.textContent = detailTitleText;
+  $detailHeaderTitle.textContent = detailTitleText;
 
   const establishedYear = getEstablishedYear(f.established);
   const statusText = String(f.status ?? "").trim();
@@ -1274,6 +1324,7 @@ function updateDetailPanel(f) {
   renderDetailResources(f, renderVersion);
   $detailSidebar.hidden = false;
   syncMobileDetailSheetState(true);
+  queueDetailHeaderTitleSync();
 }
 
 // ---------- Map ----------
@@ -1388,8 +1439,15 @@ async function main() {
   }
 
   syncMapChromeForViewport = () => {
+    const isAtFullHeight = mobileSheetState === "full" || mobileSheetOffset <= 1;
+    const isMobileDetailOpen =
+      isMobileViewport() &&
+      document.body.classList.contains("mobile-detail-open");
+    const hideMapControlsOnMobile =
+      isMobileViewport() && (isAtFullHeight || isMobileDetailOpen);
+
     if ($mobileMapControls) {
-      $mobileMapControls.hidden = false;
+      $mobileMapControls.hidden = hideMapControlsOnMobile;
     }
 
     try {

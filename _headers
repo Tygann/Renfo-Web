@@ -1,0 +1,29 @@
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/config.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/src/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/styles.css
+  Cache-Control: public, max-age=0, must-revalidate
+
+/styles/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/data/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/site.webmanifest
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/*
+  Cache-Control: public, max-age=604800

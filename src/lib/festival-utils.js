@@ -158,6 +158,9 @@ function getGroupKey(f, groupMode) {
 }
 
 function getListIndicatorData(f, showUpcomingDaysInList) {
+  // Global toggle: hide all row indicators when disabled.
+  if (!showUpcomingDaysInList) return null;
+
   const status = normalize(f?.status).trim();
 
   if (status === "active") {
@@ -173,7 +176,7 @@ function getListIndicatorData(f, showUpcomingDaysInList) {
     const daysUntilStart = Number.isFinite(f?.daysUntilStart)
       ? f.daysUntilStart
       : null;
-    // Optional mode: show countdown days instead of generic "Soon" badge.
+    // Upcoming rows prefer countdown days, with "Soon" fallback.
     if (
       showUpcomingDaysInList &&
       daysUntilStart != null &&
