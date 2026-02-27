@@ -82,7 +82,7 @@
       crossorigin
       defer
       data-callback="initMapKit"
-      data-libraries="map,annotations,user-location"
+      data-libraries="full-map,annotations,user-location,services,look-around"
       data-token=""
     ></script>
     <script>
@@ -401,10 +401,35 @@
         </section>
 
         <div id="detailWeatherCard" hidden>
-          <p class="sectionHeader detailSectionHeader">Forecast</p>
           <section class="detailCard detailWeatherPanel">
             <p id="detailWeatherStatus"></p>
             <div id="detailWeatherRows"></div>
+          </section>
+        </div>
+
+        <div id="detailResourcesCard" hidden>
+          <p class="sectionHeader detailSectionHeader">Resources</p>
+          <section class="detailCard detailResourcesPanel">
+            <div id="detailResources"></div>
+          </section>
+        </div>
+
+        <div id="detailAppleCard" hidden>
+          <section class="detailCard detailAppleSummaryPanel">
+            <a
+              id="detailAppleOpenBtn"
+              class="detailResourceBtn detailAppleOpenBtn"
+              href="#"
+              aria-label="Open in Apple Maps"
+            >
+              <span class="detailAppleOpenIcon" aria-hidden="true">
+                <i data-lucide="map-pinned"></i>
+              </span>
+              <span class="detailResourceLabel">Open in Apple Maps</span>
+              <span class="detailResourceChevron" aria-hidden="true">
+                <i data-lucide="chevron-right"></i>
+              </span>
+            </a>
           </section>
         </div>
 
@@ -429,10 +454,9 @@
           </section>
         </div>
 
-        <div id="detailResourcesCard" hidden>
-          <p class="sectionHeader detailSectionHeader">Resources</p>
-          <section class="detailCard detailResourcesPanel">
-            <div id="detailResources"></div>
+        <div id="detailLookAroundCard" hidden>
+          <section class="detailCard detailLookAroundPanel">
+            <div id="detailLookAroundViewport"></div>
           </section>
         </div>
 

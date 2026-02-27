@@ -31,11 +31,14 @@ document.querySelectorAll(".siteYear").forEach(($el) => {
 
 // ---------- Helpers ----------
 function isMapLibraryLoaded() {
+  if (typeof window.mapkit?.Map === "function") return true;
   const libs = window.mapkit?.loadedLibraries;
   if (!libs) return false;
-  if (Array.isArray(libs)) return libs.includes("map");
-  if (typeof libs.has === "function") return libs.has("map");
-  return Boolean(libs.map || libs["map"]);
+  if (Array.isArray(libs)) return libs.includes("map") || libs.includes("full-map");
+  if (typeof libs.has === "function") {
+    return libs.has("map") || libs.has("full-map");
+  }
+  return Boolean(libs.map || libs["map"] || libs["full-map"]);
 }
 
 async function waitForMapKit() {
@@ -85,6 +88,11 @@ function getMapPadding(top, right, bottom, left) {
   return { top, right, bottom, left };
 }
 
+function normalizeApplePlaceId(value) {
+  const normalized = String(value ?? "").trim();
+  return normalized ? normalized : null;
+}
+
 /** @returns {Promise<Festival[]>} */
 async function loadFestivals() {
   // Normalize raw festival JSON into view-ready objects used throughout the UI.
@@ -108,6 +116,7 @@ async function loadFestivals() {
         logoAssetUrl: getFestivalAssetUrl(f, "logo"),
         mapAssetUrl: getFestivalAssetUrl(f, "map"),
         campAssetUrl: getFestivalAssetUrl(f, "camp"),
+        placeId: normalizeApplePlaceId(f.placeId ?? f.placeID),
       };
     });
 }
@@ -378,6 +387,12 @@ const $detailAddressLine1 = document.getElementById("detailAddressLine1");
 const $detailAddressLine2 = document.getElementById("detailAddressLine2");
 const $detailAddressLine3 = document.getElementById("detailAddressLine3");
 const $detailAddressOpenBtn = document.getElementById("detailAddressOpenBtn");
+const $detailAppleCard = document.getElementById("detailAppleCard");
+const $detailAppleOpenBtn = document.getElementById("detailAppleOpenBtn");
+const $detailLookAroundCard = document.getElementById("detailLookAroundCard");
+const $detailLookAroundViewport = document.getElementById(
+  "detailLookAroundViewport",
+);
 const $detailResourcesCard = document.getElementById("detailResourcesCard");
 const $detailResources = document.getElementById("detailResources");
 const $mobileMapControls = document.getElementById("mobileMapControls");
@@ -393,8 +408,12 @@ const $aboutBackdrop = document.getElementById("aboutBackdrop");
 let selectedFestivalId = null;
 // Increments on each detail render request so async work can be ignored if stale.
 let detailRenderVersion = 0;
+let isDetailWeatherExpanded = false;
 // Avoid repeated image probes for the same URL when building resource rows.
 const resourceAssetExistsCache = new Map();
+const applePlaceCache = new Map();
+let activeAppleLookAround = null;
+let appleLookAroundProbeHost = null;
 const mobileMedia = window.matchMedia("(max-width: 640px)");
 let mobileSheetState = "peek";
 let mobileSheetOffset = 0;
@@ -981,8 +1000,396 @@ function renderWeatherStatus(message) {
   $detailWeatherStatus.hidden = !text;
 }
 
+function syncDetailWeatherToggle(dayCount = 0) {
+  const hasExpandableForecast = dayCount > 1;
+  $detailWeatherRows.classList.toggle(
+    "is-collapsed",
+    hasExpandableForecast && !isDetailWeatherExpanded,
+  );
+  const toggleButton = $detailWeatherRows.querySelector(".detailWeatherToggle");
+  if (!toggleButton) return;
+  toggleButton.setAttribute(
+    "aria-expanded",
+    String(hasExpandableForecast && isDetailWeatherExpanded),
+  );
+  const buttonLabel =
+    hasExpandableForecast && isDetailWeatherExpanded
+      ? "Collapse forecast"
+      : "Expand forecast";
+  toggleButton.setAttribute("aria-label", buttonLabel);
+  toggleButton.title = buttonLabel;
+}
+
+function resetDetailWeatherToggle() {
+  isDetailWeatherExpanded = false;
+  syncDetailWeatherToggle(0);
+}
+
+function waitForNextFrame() {
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => resolve());
+  });
+}
+
+function waitForDelay(delayMs) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, delayMs);
+  });
+}
+
+function getAppleLookAroundProbeHost() {
+  if (appleLookAroundProbeHost?.isConnected) return appleLookAroundProbeHost;
+
+  const host = document.createElement("div");
+  host.setAttribute("aria-hidden", "true");
+  host.style.position = "fixed";
+  host.style.left = "-200vw";
+  host.style.top = "0";
+  host.style.width = "320px";
+  host.style.height = "184px";
+  host.style.opacity = "0";
+  host.style.pointerEvents = "none";
+  host.style.overflow = "hidden";
+  host.style.zIndex = "-1";
+  document.body.appendChild(host);
+  appleLookAroundProbeHost = host;
+  return host;
+}
+
+function destroyDetailAppleEmbeds() {
+  if (typeof activeAppleLookAround?.destroy === "function") {
+    try {
+      activeAppleLookAround.destroy();
+    } catch (_) {}
+  }
+  activeAppleLookAround = null;
+  $detailLookAroundViewport.innerHTML = "";
+}
+
+function clearDetailApplePanels() {
+  destroyDetailAppleEmbeds();
+  $detailAppleCard.hidden = true;
+  $detailLookAroundCard.hidden = true;
+  setDetailActionLink($detailAppleOpenBtn, null, true);
+}
+
+function buildAppleMapsHref(f) {
+  const placeId = normalizeApplePlaceId(f?.placeId ?? f?.placeID);
+  if (placeId) {
+    return `https://maps.apple.com/place?place-id=${encodeURIComponent(placeId)}`;
+  }
+
+  const q = [f?.name, f?.address, f?.city, f?.state, f?.zip]
+    .filter(Boolean)
+    .join(", ");
+  if (q) return `https://maps.apple.com/?q=${encodeURIComponent(q)}`;
+  return buildDirectionsHref(f);
+}
+
+function buildAppleSearchRegion(lat, lng) {
+  if (
+    typeof window.mapkit?.Coordinate !== "function" ||
+    typeof window.mapkit?.CoordinateSpan !== "function" ||
+    typeof window.mapkit?.CoordinateRegion !== "function"
+  ) {
+    return null;
+  }
+  return new window.mapkit.CoordinateRegion(
+    new window.mapkit.Coordinate(lat, lng),
+    new window.mapkit.CoordinateSpan(0.08, 0.08),
+  );
+}
+
+function computeAppleCoordinateDistance(place, f) {
+  const lat = place?.coordinate?.latitude;
+  const lng = place?.coordinate?.longitude;
+  if (
+    typeof lat !== "number" ||
+    !Number.isFinite(lat) ||
+    typeof lng !== "number" ||
+    !Number.isFinite(lng)
+  ) {
+    return Number.POSITIVE_INFINITY;
+  }
+  return Math.hypot(lat - f.lat, lng - f.lng);
+}
+
+function scoreApplePlaceSearchMatch(place, f) {
+  const placeName = normalize(place?.name ?? "");
+  const festivalName = normalize(f?.name ?? "");
+  let score = 0;
+
+  if (placeName && festivalName) {
+    if (placeName === festivalName) score += 100;
+    if (placeName.includes(festivalName) || festivalName.includes(placeName)) {
+      score += 50;
+    }
+
+    const festivalTokens = festivalName
+      .split(" ")
+      .map((token) => token.trim())
+      .filter((token) => token.length >= 4);
+    for (const token of festivalTokens) {
+      if (placeName.includes(token)) score += 8;
+    }
+  }
+
+  const distancePenalty = Math.min(
+    40,
+    Math.round(computeAppleCoordinateDistance(place, f) * 300),
+  );
+  return score - distancePenalty;
+}
+
+function pickBestAppleSearchPlace(places, f) {
+  const ranked = [...places]
+    .filter(Boolean)
+    .map((place) => ({ place, score: scoreApplePlaceSearchMatch(place, f) }))
+    .sort((a, b) => b.score - a.score);
+  if (ranked.length === 0) return null;
+  if (ranked[0].score < 12) return null;
+  return ranked[0].place;
+}
+
+function lookupApplePlaceById(placeId) {
+  if (
+    !placeId ||
+    typeof window.mapkit?.PlaceLookup !== "function"
+  ) {
+    return Promise.resolve(null);
+  }
+
+  return new Promise((resolve, reject) => {
+    const lookup = new window.mapkit.PlaceLookup();
+    lookup.getPlace(placeId, (error, place) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(place ?? null);
+    });
+  });
+}
+
+function searchApplePlaceForFestival(f) {
+  if (
+    typeof window.mapkit?.Search !== "function" ||
+    typeof f?.lat !== "number" ||
+    typeof f?.lng !== "number"
+  ) {
+    return Promise.resolve(null);
+  }
+
+  const region = buildAppleSearchRegion(f.lat, f.lng);
+  const searchOptions = region ? { region } : {};
+  const regionPriority = window.mapkit?.Search?.RegionPriority?.Required;
+  if (regionPriority) {
+    searchOptions.regionPriority = regionPriority;
+  }
+
+  return new Promise((resolve, reject) => {
+    const search = new window.mapkit.Search(searchOptions);
+    search.search(f.name ?? "", (error, data) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      const places = Array.isArray(data?.places) ? data.places : [];
+      resolve(pickBestAppleSearchPlace(places, f));
+    });
+  });
+}
+
+async function resolveFestivalApplePlace(f) {
+  const placeId = normalizeApplePlaceId(f?.placeId ?? f?.placeID);
+
+  if (placeId) {
+    try {
+      const place = await lookupApplePlaceById(placeId);
+      if (place) return place;
+    } catch (_) {}
+  }
+
+  try {
+    const place = await searchApplePlaceForFestival(f);
+    if (place) return place;
+  } catch (_) {}
+
+  return null;
+}
+
+function getFestivalApplePlace(f) {
+  const placeId = normalizeApplePlaceId(f?.placeId ?? f?.placeID);
+  const key = placeId
+    ? `place:${placeId}`
+    : `festival:${String(f?.id ?? "")}:${String(f?.lat ?? "")}:${String(f?.lng ?? "")}`;
+
+  if (applePlaceCache.has(key)) return applePlaceCache.get(key);
+
+  const promise = resolveFestivalApplePlace(f).catch((error) => {
+    applePlaceCache.delete(key);
+    throw error;
+  });
+  applePlaceCache.set(key, promise);
+  return promise;
+}
+
+function getLookAroundLocationKey(location) {
+  if (typeof location?.id === "string" && location.id.trim()) {
+    return `place:${location.id.trim()}`;
+  }
+
+  const lat = location?.coordinate?.latitude ?? location?.latitude;
+  const lng = location?.coordinate?.longitude ?? location?.longitude;
+  if (
+    typeof lat === "number" &&
+    Number.isFinite(lat) &&
+    typeof lng === "number" &&
+    Number.isFinite(lng)
+  ) {
+    return `coord:${lat.toFixed(6)},${lng.toFixed(6)}`;
+  }
+
+  return null;
+}
+
+function getLookAroundLocationCandidates(f, place = null) {
+  const candidates = [];
+  const seen = new Set();
+  const appendCandidate = (location) => {
+    if (!location) return;
+    const key = getLookAroundLocationKey(location);
+    if (key && seen.has(key)) return;
+    if (key) seen.add(key);
+    candidates.push(location);
+  };
+
+  if (place) {
+    appendCandidate(place);
+  }
+
+  if (
+    typeof window.mapkit?.Coordinate === "function" &&
+    typeof f?.lat === "number" &&
+    Number.isFinite(f.lat) &&
+    typeof f?.lng === "number" &&
+    Number.isFinite(f.lng)
+  ) {
+    appendCandidate(new window.mapkit.Coordinate(f.lat, f.lng));
+  }
+
+  return candidates;
+}
+
+async function probeLookAroundAvailability(location, renderVersion) {
+  if (typeof window.mapkit?.LookAround !== "function") return false;
+
+  const probeHost = getAppleLookAroundProbeHost();
+  probeHost.innerHTML = "";
+
+  return new Promise((resolve) => {
+    let probe = null;
+    let isSettled = false;
+    const finish = (isAvailable) => {
+      if (isSettled) return;
+      isSettled = true;
+      if (typeof probe?.destroy === "function") {
+        try {
+          probe.destroy();
+        } catch (_) {}
+      }
+      probeHost.innerHTML = "";
+      resolve(renderVersion === detailRenderVersion && isAvailable);
+    };
+
+    try {
+      probe = new window.mapkit.LookAround(probeHost, location, {
+        showsDialogControl: false,
+      });
+      probe.addEventListener?.("load", () => finish(true));
+      probe.addEventListener?.("error", () => finish(false));
+      probe.addEventListener?.("readystatechange", () => {
+        if (probe?.readyState === "complete") {
+          finish(true);
+          return;
+        }
+        if (probe?.readyState === "error") {
+          finish(false);
+        }
+      });
+      waitForDelay(5000).then(() => finish(false));
+    } catch (_) {
+      finish(false);
+    }
+  });
+}
+
+async function mountDetailLookAround(location, renderVersion) {
+  $detailLookAroundCard.hidden = false;
+  await waitForNextFrame();
+  if (renderVersion !== detailRenderVersion) return false;
+
+  try {
+    if (typeof window.mapkit?.LookAroundPreview !== "function") {
+      $detailLookAroundCard.hidden = true;
+      return false;
+    }
+    activeAppleLookAround = new window.mapkit.LookAroundPreview(
+      $detailLookAroundViewport,
+      location,
+    );
+    return true;
+  } catch (_) {
+    $detailLookAroundCard.hidden = true;
+    $detailLookAroundViewport.innerHTML = "";
+    activeAppleLookAround = null;
+    return false;
+  }
+}
+
+async function renderDetailAppleMaps(f, renderVersion) {
+  clearDetailApplePanels();
+
+  if (!f || (f.lat == null && !normalizeApplePlaceId(f.placeId ?? f.placeID))) {
+    return;
+  }
+
+  const mapsHref = buildAppleMapsHref(f);
+  $detailAppleCard.hidden = false;
+  setDetailActionLink($detailAppleOpenBtn, mapsHref, true);
+
+  if (
+    typeof window.mapkit?.LookAround !== "function" ||
+    typeof window.mapkit?.LookAroundPreview !== "function" ||
+    !$detailLookAroundViewport
+  ) {
+    return;
+  }
+
+  let place = null;
+  try {
+    place = await getFestivalApplePlace(f);
+  } catch (_) {}
+  if (renderVersion !== detailRenderVersion) return;
+
+  const lookAroundCandidates = getLookAroundLocationCandidates(f, place);
+  for (const candidate of lookAroundCandidates) {
+    const isAvailable = await probeLookAroundAvailability(
+      candidate,
+      renderVersion,
+    );
+    if (renderVersion !== detailRenderVersion) return;
+    if (!isAvailable) continue;
+
+    const didMount = await mountDetailLookAround(candidate, renderVersion);
+    if (renderVersion !== detailRenderVersion) return;
+    if (didMount) break;
+  }
+}
+
 async function renderDetailWeather(f, renderVersion) {
   $detailWeatherRows.innerHTML = "";
+  resetDetailWeatherToggle();
 
   if (!f || f.lat == null || f.lng == null) {
     renderWeatherStatus("");
@@ -1003,13 +1410,18 @@ async function renderDetailWeather(f, renderVersion) {
       if (!$detailWeatherStatus.textContent) {
         renderWeatherStatus("Forecast unavailable.");
       }
+      syncDetailWeatherToggle(0);
       return;
     }
 
     $detailWeatherRows.innerHTML = "";
-    for (const day of weather.days) {
+    for (const [index, day] of weather.days.entries()) {
       const row = document.createElement("div");
       row.className = "detailWeatherRow";
+      const isExpandableRow = index === 0 && weather.days.length > 1;
+      if (isExpandableRow) {
+        row.classList.add("is-expandable");
+      }
 
       const iconWrap = document.createElement("span");
       iconWrap.className = "detailWeatherIconWrap";
@@ -1070,16 +1482,35 @@ async function renderDetailWeather(f, renderVersion) {
       tempLow.textContent = day.tempLow;
 
       temps.append(tempHigh, tempDivider, tempLow);
-
       row.append(iconWrap, main, temps);
+
+      if (isExpandableRow) {
+        const toggleButton = document.createElement("button");
+        toggleButton.className = "detailWeatherToggle";
+        toggleButton.type = "button";
+        toggleButton.setAttribute("aria-controls", "detailWeatherRows");
+        toggleButton.innerHTML = `
+          <span class="detailWeatherToggleIcon" aria-hidden="true">
+            ${getLucideIconMarkup("chevron-down")}
+          </span>
+        `;
+        toggleButton.addEventListener("click", () => {
+          isDetailWeatherExpanded = !isDetailWeatherExpanded;
+          syncDetailWeatherToggle($detailWeatherRows.childElementCount);
+        });
+        row.append(toggleButton);
+      }
+
       $detailWeatherRows.appendChild(row);
     }
+    syncDetailWeatherToggle(weather.days.length);
     refreshLucideIcons();
   } catch (error) {
     // Same stale-guard for error responses from in-flight requests.
     if (renderVersion !== detailRenderVersion) return;
 
     $detailWeatherRows.innerHTML = "";
+    syncDetailWeatherToggle(0);
     if (error?.code === "missing_token") {
       renderWeatherStatus(
         "Weather unavailable. Set WEATHER_API_URL (recommended) or WEATHERKIT_TOKEN in config.js.",
@@ -1187,7 +1618,9 @@ function updateDetailPanel(f) {
     $detailWeatherRows.innerHTML = "";
     $detailWeatherStatus.textContent = "";
     $detailWeatherStatus.hidden = true;
+    resetDetailWeatherToggle();
     $detailWeatherCard.hidden = true;
+    clearDetailApplePanels();
     $detailResources.innerHTML = "";
     $detailResourcesCard.hidden = true;
     $detailMetaStatusValue.textContent = "";
@@ -1260,7 +1693,9 @@ function updateDetailPanel(f) {
   $detailWeatherRows.innerHTML = "";
   $detailWeatherStatus.textContent = "";
   $detailWeatherStatus.hidden = true;
+  resetDetailWeatherToggle();
   $detailWeatherCard.hidden = true;
+  clearDetailApplePanels();
 
   const cityState = [f.city, f.state].filter(Boolean).join(", ");
   const line2 = [cityState, f.zip].filter(Boolean).join(" ").trim();
@@ -1321,6 +1756,7 @@ function updateDetailPanel(f) {
   $detailResources.innerHTML = "";
   $detailResourcesCard.hidden = true;
   renderDetailWeather(f, renderVersion);
+  renderDetailAppleMaps(f, renderVersion);
   renderDetailResources(f, renderVersion);
   $detailSidebar.hidden = false;
   syncMobileDetailSheetState(true);

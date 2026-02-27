@@ -282,6 +282,16 @@
     padding: 12px 14px;
   }
 
+  #detailLookAroundViewport {
+    height: 210px;
+    min-height: 210px;
+  }
+
+  #detailLookAroundViewport > * {
+    height: 100%;
+    min-height: 210px;
+  }
+
   .detailWeatherRow {
     gap: 12px;
     padding: 13px 14px;

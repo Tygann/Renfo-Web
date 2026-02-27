@@ -10,6 +10,8 @@
  * @property {string=} stateName
  * @property {string=} abbreviation
  * @property {string=} status
+ * @property {string|null=} placeId
+ * @property {string|null=} placeID
  * @property {number=} daysUntilStart
  * @property {number} lat
  * @property {number} lng
