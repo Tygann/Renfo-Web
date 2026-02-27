@@ -359,9 +359,15 @@ const $detailMetaStatusItem = document.getElementById("detailMetaStatusItem");
 const $detailMetaEstablishedItem = document.getElementById(
   "detailMetaEstablishedItem",
 );
+const $detailMetaAttendanceItem = document.getElementById(
+  "detailMetaAttendanceItem",
+);
 const $detailMetaStatusValue = document.getElementById("detailMetaStatusValue");
 const $detailMetaEstablishedValue = document.getElementById(
   "detailMetaEstablishedValue",
+);
+const $detailMetaAttendanceValue = document.getElementById(
+  "detailMetaAttendanceValue",
 );
 const $detailMetaItems = Array.from(
   $detailMetaRow.querySelectorAll(".detailMetaItem"),
@@ -378,8 +384,6 @@ const $detailActionDirections = document.getElementById(
 const $detailActionWebsite = document.getElementById("detailActionWebsite");
 const $detailDateValue = document.getElementById("detailDateValue");
 const $detailTimeValue = document.getElementById("detailTimeValue");
-const $detailAttendanceRow = document.getElementById("detailAttendanceRow");
-const $detailAttendanceValue = document.getElementById("detailAttendanceValue");
 const $detailWeatherCard = document.getElementById("detailWeatherCard");
 const $detailWeatherStatus = document.getElementById("detailWeatherStatus");
 const $detailWeatherRows = document.getElementById("detailWeatherRows");
@@ -1626,10 +1630,12 @@ function updateDetailPanel(f) {
     $detailMetaStatusValue.textContent = "";
     $detailMetaStatusValue.classList.remove("is-active", "is-discontinued");
     $detailMetaEstablishedValue.textContent = "";
+    $detailMetaAttendanceValue.textContent = "";
     $detailLastUpdated.textContent = "";
     $detailLastUpdated.hidden = true;
     for (const item of $detailMetaItems) {
       item.hidden = true;
+      item.classList.remove("has-visible-predecessor");
     }
     $detailHeaderTitle.textContent = "";
     setDetailHeaderTitleProgress(0);
@@ -1671,24 +1677,35 @@ function updateDetailPanel(f) {
     $detailMetaEstablishedItem.hidden = true;
   }
 
+  const attendance = formatAttendance(f.attendance);
+  if (attendance) {
+    $detailMetaAttendanceValue.textContent = attendance;
+    $detailMetaAttendanceItem.hidden = false;
+  } else {
+    $detailMetaAttendanceValue.textContent = "";
+    $detailMetaAttendanceItem.hidden = true;
+  }
+
   for (const item of $detailMetaItems) {
     const valueEl = item.querySelector(".detailMetaValue");
     if (!valueEl) continue;
     item.hidden = !String(valueEl.textContent ?? "").trim();
+    item.classList.remove("has-visible-predecessor");
+  }
+
+  let hasVisibleMetaItem = false;
+  for (const item of $detailMetaItems) {
+    if (item.hidden) continue;
+    if (hasVisibleMetaItem) {
+      item.classList.add("has-visible-predecessor");
+    }
+    hasVisibleMetaItem = true;
   }
   $detailMetaRow.hidden = $detailMetaItems.every((item) => item.hidden);
 
   const dateRange = formatDateRange(f);
   $detailDateValue.textContent = dateRange;
   $detailTimeValue.textContent = formatTimeRange(f);
-  const attendance = formatAttendance(f.attendance);
-  if (attendance) {
-    $detailAttendanceValue.textContent = attendance;
-    $detailAttendanceRow.hidden = false;
-  } else {
-    $detailAttendanceValue.textContent = "";
-    $detailAttendanceRow.hidden = true;
-  }
 
   $detailWeatherRows.innerHTML = "";
   $detailWeatherStatus.textContent = "";

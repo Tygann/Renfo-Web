@@ -44,24 +44,29 @@
     padding-top: 14px;
   }
 
+  #detailSidebar {
+    --detail-list-row-min-height: 48px;
+    --detail-list-row-padding-x: 14px;
+  }
+
   #brandLeft {
-    gap: 2px;
+    gap: 6px;
   }
 
   #brandLogo {
-    width: 21px;
-    height: 21px;
+    width: 30px;
+    height: 30px;
   }
 
   #brandRow h1 {
-    font-size: 21px;
-    font-weight: 640;
-    letter-spacing: -0.1px;
-    line-height: 1.02;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
   }
 
   #brandTitle {
-    margin-left: -2px;
+    margin-left: 0;
   }
 
   #optionsMenu {
@@ -267,7 +272,6 @@
 
   .detailInfoRow {
     gap: 12px;
-    padding: 13px 14px;
   }
 
   .detailAddressPanel {
@@ -293,12 +297,11 @@
   }
 
   .detailWeatherRow {
-    gap: 12px;
-    padding: 13px 14px;
+    gap: 8px;
   }
 
   .detailResourceBtn {
-    padding: 13px 14px;
+    gap: 12px;
   }
 
   #sidebar.options-open {
